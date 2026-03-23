@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Sidebar,
   SidebarContent,
@@ -115,18 +115,22 @@ export function AppShell() {
                       </span>
                     </div>
                   </SidebarMenuButton>
-                  <button
-                    onClick={() => toggleRightPanel('ask')}
-                    title="Ask NorthStar"
-                    className={cn(
-                      'flex size-8 shrink-0 items-center justify-center rounded-md transition-colors group-data-[collapsible=icon]:hidden',
-                      rightPanel === 'ask'
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                    )}
-                  >
-                    <Sparkles className="size-4" />
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <button
+                        onClick={() => toggleRightPanel('ask')}
+                        className={cn(
+                          'flex size-8 shrink-0 items-center justify-center rounded-md transition-colors group-data-[collapsible=icon]:hidden',
+                          rightPanel === 'ask'
+                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                        )}
+                      >
+                        <Sparkles className="size-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Ask NorthStar</TooltipContent>
+                  </Tooltip>
                 </div>
               </SidebarMenuItem>
             </SidebarMenu>
