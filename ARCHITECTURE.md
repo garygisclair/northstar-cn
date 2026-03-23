@@ -5,7 +5,7 @@
 Everything is a **Page**. A Page is a canvas of **Cards**.
 
 ```
-Datasets → Card (configured inline) → Page (canvas of cards) → Tags (home/curated/certified/mine)
+Datasets → Card (configured inline) → Page (canvas of cards) → Tags (dynamic sections)
 ```
 
 ## Data Model
@@ -33,13 +33,30 @@ interface Page {
   title: string;
   subtitle?: string;
   category?: string;
-  tags: ('home' | 'curated' | 'certified' | 'mine')[];
+  tags: string[];  // dynamic — defaults: 'home', 'curated', 'certified', 'mine'
   tabs: PageTab[];
   dataAsOf?: string;
   dateCreated: string;
   dateModified: string;
 }
 ```
+
+## State Management
+
+All page state is **in-memory** (React context). Browser refresh resets to seed data.
+
+| Store | Location | Persistence | Purpose |
+|---|---|---|---|
+| **PagesProvider** | `src/stores/pages.tsx` | None (in-memory) | Mutable page list, dynamic sections, group/ungroup |
+| **FavoritesProvider** | `src/stores/favorites.tsx` | localStorage | Saved/bookmarked page IDs |
+| **SlideshowProvider** | `src/components/slideshow/SlideshowContext.tsx` | None | Slideshow playback state |
+
+### PagesProvider Actions
+- `createPage(title, category, sectionId)` → new empty page
+- `groupPages(name, pageIds)` → merge single-tab pages into one grouped page
+- `ungroupPage(pageId)` → split grouped page back into singles
+- `createSection(label)` → new sidebar section
+- `removeSection(sectionId)` → remove section, move pages to My Pages
 
 ## Why This Model
 
@@ -54,34 +71,37 @@ Modern tools (Notion, Figma, Grafana, Hex) use **one content model, multiple vie
 | My Collections | Pages tagged `mine` |
 | Certified Collections | Pages tagged `certified` |
 | Workbench / Visualize | "+ Add Card" on any page (future) |
+| Custom Collections | Pages in user-created sections |
 
 ## Layout (Obsidian-inspired IDE)
 
 1. **Utility Bar** (top, full-width) — sidebar toggle, home, search, saved | breadcrumb | Ask NorthStar (gradient), alerts dropdown, fullscreen
-2. **Left Sidebar** — tree navigation (Pages: Curated/Certified/My Pages), collapsible to icon rail
-3. **Saved Sidebar** — alternate view toggled from utility bar bookmark icon
-4. **Main Content** — HomePage (KPI grid) or PageView (tabs, filters, card canvas) + StatusBar
-5. **Right Panel** — independent 360px panel for Ask NorthStar AI chat, card config, SLA details
+2. **Left Sidebar** — tree navigation with dynamic sections, expandable multi-tab pages, New Page / Group Pages / New Section actions
+3. **Saved Sidebar** — alternate view toggled from utility bar bookmark icon, expandable multi-tab pages
+4. **Main Content** — HomePage (KPI grid + filters) or PageView (tabs, filters, card canvas) + StatusBar
+5. **Right Panel** — independent panel for Ask NorthStar AI chat (360px), KPI filters (240px), VoC filters (240px)
 6. **Status Bar** — clickable "Data as of" timestamp opens SLA modal with dataset status
+7. **Slideshow FAB** — bottom-right (saved sidebar only), cycles saved pages/tabs on timer
 
 ## Seed Pages
 
 | Page | Tags | Tabs | Status |
 |---|---|---|---|
-| My KPIs | `home` | — | 20 KPIs (9 default), customize mode, add metric modal |
-| Buyer Insights | `curated` | 5 | Summary has card definitions, others placeholder |
-| KPI Overview | `curated` | 3 | Placeholder |
-| Voice of Customer | `curated` | 1 | Placeholder |
-| + 9 stubs | `curated` | 1 each | Title + category only |
+| My KPIs | `home` | 1 | 20 KPIs, customize mode, add metric modal, filters panel |
+| Buyer Insights | `curated` | 5 | All tabs stubbed |
+| KPI Overview | `curated` | 3 | All tabs stubbed |
+| Voice of Customer | `curated` | 1 | Full VoC report (sentiment KPIs + verbatim feed + filters) |
+| + 9 stubs | `certified` | 1 each | Title + category only |
 
 ## Carry-Over from Original NorthStar
 
 | Component | Source | Status |
 |---|---|---|
 | KPI Home Page | `northstar/src/pages/HomePage.tsx` | Ported (20 KPIs, mini bar charts, customize mode) |
+| Voice of Customer | `northstar/src/components/Reports/VoiceOfCustomer/` | Ported (sentiment KPIs, verbatim feed, filters) |
 | SLA Modal | `northstar/src/components/Reports/SlaModal.tsx` | Ported (shadcn Dialog) |
+| Slideshow | `northstar/src/components/Slideshow/` | Ported (FAB, progress bar, settings, help modal) |
 | mockMetricData.ts (seeded PRNG) | `northstar/src/data/mockMetricData.ts` | Not yet copied |
-| BuyerInsights mock data | `northstar/src/components/Reports/BuyerInsights/mockData.ts` | Not yet copied |
 | Few/Tufte visualization rules | Design decisions carry over | Applied to card design |
 
 ## References

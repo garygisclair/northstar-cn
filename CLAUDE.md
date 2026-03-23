@@ -17,7 +17,7 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 ### Card Model Architecture
 - **Page** = a named canvas of Cards, optionally with tabs
 - **Card** = atomic unit: KPI, chart, table, text — connected to a dataset + query
-- **Tags** = how pages are organized: `curated`, `certified`, `mine`
+- **Tags** = string-based, how pages are organized (default: `curated`, `certified`, `mine` — admins can create custom sections)
 - No separate Workbench/Catalog/Reports — one content model
 - Types defined in `src/types.ts`
 
@@ -26,11 +26,12 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 2. **Left Sidebar** — tree navigation with right-aligned chevrons
    - NorthStar branding in header (links to home)
    - Home (flat link)
-   - Pages (collapsible: Curated / Certified / My Pages + New Page)
+   - Pages (collapsible: dynamic sections + New Page + Group Pages + New Section)
+   - Multi-tab pages show chevron → expandable child tab links
    - Footer: dark mode toggle + settings + logout (collapsed: settings only)
-3. **Saved Sidebar** — alternate sidebar view toggled from utility bar bookmark icon, shows saved/bookmarked pages
-4. **Main Content** — HomePage (KPI grid with customize/add metric) or PageView (header, tabs, filters, card canvas) + StatusBar (clickable "Data as of" opens SLA modal)
-5. **Right Panel** — independent, toggled by "Ask NorthStar" (AI chat, card config, SLA details)
+3. **Saved Sidebar** — alternate sidebar view toggled from utility bar bookmark icon, shows saved/bookmarked pages with expandable multi-tab pages
+4. **Main Content** — HomePage (KPI grid with customize/add metric/filters) or PageView (header, tabs, filters, card canvas) + StatusBar (clickable "Data as of" opens SLA modal)
+5. **Right Panel** — independent, toggled by "Ask NorthStar" (AI chat), "Filters" (KPI or VoC filters), or card config/SLA details
 
 ### Responsive
 - Minimum target: iPad Mini 1024×768
@@ -48,9 +49,14 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 - Base path: `/northstar-cn/`
 - Routes: `/`, `/p/:pageId`, `/p/:pageId/:tabId`, `/new-tab`, `/alerts`, `/alerts/:subPage`
 
+## State Management
+- `src/stores/pages.tsx` — **PagesProvider**: mutable page list + dynamic sections, in-memory (resets on refresh). Provides createPage, groupPages, ungroupPage, createSection, removeSection.
+- `src/stores/favorites.tsx` — **FavoritesProvider**: saved/bookmarked page IDs in localStorage. Default seeds: buyers, perf-dashboard, cust-feedback.
+
 ## Data Sources
-- `src/data/pages.ts` — seed pages with Card arrays (used by PageView for non-home pages)
-- `src/routes/HomePage.tsx` — contains ALL_KPIS (20 KPIs with hardcoded data, ported from original NorthStar)
+- `src/data/pages.ts` — seed pages (13 total: 3 curated with content, 9 certified stubs, 1 home). Loaded into PagesProvider on mount.
+- `src/routes/HomePage.tsx` — contains ALL_KPIS (20 KPIs with hardcoded data, ported from original NorthStar) + DEMO_CATEGORY_KPIS (Sneakers, Handbags, Watches)
+- `src/components/reports/VoiceOfCustomer/mockData.ts` — 27 verbatim feedback items with seeded random generation
 - `src/data/mockMetricData.ts` — seeded PRNG mock data generator (NOT YET COPIED)
 - Original NorthStar: `C:\Users\gary\Documents\GitHub\northstar\`
 
@@ -86,12 +92,15 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 - [x] Ungroup: button in PageView header for multi-tab pages, splits back into singles
 - [x] New Page: modal with title, category (shadcn Select), section pills (My Pages only, Curated/Certified disabled for non-admins)
 - [x] Empty page canvas shows dashed "Add Card" placeholder tile
+- [x] Dynamic sections: create/remove custom sidebar sections at runtime, removing moves pages to My Pages
+- [x] Close button always navigates to home
+- [x] Buyer Insights Summary tab stubbed (cards removed)
 
 ## What's Next
+- [ ] Card type picker: "Add Card" opens type selector (KPI, Bar Chart, Data Table, Verbatim Feed) with preset templates
 - [ ] Copy mockMetricData.ts from original NorthStar
 - [ ] Build BarChartCard (Recharts horizontal bar)
 - [ ] Build DataTableCard (tabular data grid)
-- [ ] Wire real data to Buyer Insights Summary tab cards
 - [ ] Arrow navigation (cycle through page categories)
 - [ ] Search functionality (utility bar)
 - [ ] Wire Ask NorthStar right panel as page/search recommender
