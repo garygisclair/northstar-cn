@@ -84,6 +84,7 @@ Uses shadcn sidebar-07 block as the foundation:
 
 ## References
 
-- [Architecture Rethink](../Downloads/Projects/NorthStar/2026-03-22%20-%20Architecture%20Rethink.md) — strategic analysis that led to this approach
-- [Original NorthStar](../northstar/) — the portal-model codebase this replaces
-- [shadcn blocks](https://ui.shadcn.com/blocks) — layout components used
+- **Strategic "why"**: `C:\Users\gary\Downloads\Projects\NorthStar\2026-03-22 - Architecture Rethink.md` — portal vs workbench tension, Card Model proposal, Grafana/Notion/Hex comparisons, case study options
+- **Original NorthStar**: `C:\Users\gary\Documents\GitHub\northstar\` — the portal-model codebase (preserved, not modified)
+- **Original sitemap**: `C:\Users\gary\Documents\GitHub\northstar\SITEMAP.md` — feature map of the old app
+- **shadcn blocks**: https://ui.shadcn.com/blocks — always check here before building custom components
