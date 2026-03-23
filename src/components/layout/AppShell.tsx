@@ -20,7 +20,7 @@ import { StatusBar } from './StatusBar';
 import { RightPanel, type RightPanelContent } from './RightPanel';
 import { FavoritesProvider } from '@/stores/favorites';
 import { getPage } from '@/data/pages';
-import { FileTextIcon, SearchIcon, BookmarkIcon, BellIcon, MegaphoneIcon, BookOpenIcon, ArrowLeftIcon, ArrowRightIcon, MaximizeIcon, MinimizeIcon } from 'lucide-react';
+import { FileTextIcon, SearchIcon, BookmarkIcon, BellIcon, MegaphoneIcon, BookOpenIcon, ArrowLeftIcon, ArrowRightIcon, MaximizeIcon, MinimizeIcon, BotIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -179,8 +179,24 @@ export function AppShell() {
               </>
             )}
 
-            {/* Alerts + fullscreen — right side */}
+            {/* Ask NorthStar + Alerts + fullscreen — right side */}
             <div className="ml-auto flex items-center gap-1">
+              <button
+                onClick={() => toggleRightPanel('ask')}
+                className="flex h-6 items-center gap-1 rounded px-1.5 text-xs bg-gradient-to-r from-purple-400 via-blue-400 to-rose-400 bg-clip-text text-transparent font-medium hover:opacity-80 transition-opacity"
+              >
+                <BotIcon className="h-3.5 w-3.5" style={{ stroke: 'url(#ask-gradient)' }} />
+                <svg width="0" height="0" className="absolute">
+                  <defs>
+                    <linearGradient id="ask-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#c084fc" />
+                      <stop offset="50%" stopColor="#60a5fa" />
+                      <stop offset="100%" stopColor="#fb7185" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span className="hidden sm:inline">Ask NorthStar</span>
+              </button>
               <DropdownMenu>
                 <DropdownMenuTrigger render={
                   <button className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors" />

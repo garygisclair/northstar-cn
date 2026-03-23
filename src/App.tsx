@@ -1,5 +1,6 @@
 import { createHashRouter, RouterProvider } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
+import { HomePage } from '@/routes/HomePage';
 import { PageView } from '@/routes/PageView';
 import { AlertsView } from '@/routes/AlertsView';
 import { NewTabView } from '@/routes/NewTabView';
@@ -10,7 +11,7 @@ const router = createHashRouter(
       path: '/',
       element: <AppShell />,
       children: [
-        { index: true, element: <PageView pageId="home" /> },
+        { index: true, element: <HomePage /> },
         { path: 'p/:pageId', element: <PageView /> },
         { path: 'p/:pageId/:tabId', element: <PageView /> },
         { path: 'new-tab', element: <NewTabView /> },
