@@ -15,7 +15,6 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Separator } from '@/components/ui/separator';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -205,7 +204,6 @@ export function AppShell() {
               {/* Content header — trigger + breadcrumbs */}
               <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-4">
                 <SidebarTrigger className="-ml-1" />
-                <Separator orientation="vertical" className="mr-2 !h-4" />
                 <Breadcrumb>
                   <BreadcrumbList>
                     {breadcrumbs.map((crumb, i) => {
