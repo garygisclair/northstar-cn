@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   Sidebar,
   SidebarContent,
@@ -103,35 +102,17 @@ export function AppShell() {
           <SidebarHeader>
             <SidebarMenu>
               <SidebarMenuItem>
-                <div className="flex items-center gap-1">
-                  <SidebarMenuButton size="lg" tooltip="NorthStar" className="flex-1" onClick={() => navigate('/')}>
-                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                      <Compass className="size-4" />
-                    </div>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">NorthStar</span>
-                      <span className="truncate text-xs text-sidebar-foreground">
-                        Analytics Workspace
-                      </span>
-                    </div>
-                  </SidebarMenuButton>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <button
-                        onClick={() => toggleRightPanel('ask')}
-                        className={cn(
-                          'flex size-8 shrink-0 items-center justify-center rounded-md transition-colors group-data-[collapsible=icon]:hidden',
-                          rightPanel === 'ask'
-                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                        )}
-                      >
-                        <Sparkles className="size-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Ask NorthStar</TooltipContent>
-                  </Tooltip>
-                </div>
+                <SidebarMenuButton size="lg" tooltip="NorthStar" onClick={() => navigate('/')}>
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                    <Compass className="size-4" />
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">NorthStar</span>
+                    <span className="truncate text-xs text-sidebar-foreground">
+                      Analytics Workspace
+                    </span>
+                  </div>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarHeader>
@@ -142,6 +123,18 @@ export function AppShell() {
 
           <SidebarFooter>
             <SidebarMenu>
+              {/* Ask NorthStar — toggles right panel */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Ask NorthStar"
+                  isActive={rightPanel === 'ask'}
+                  onClick={() => toggleRightPanel('ask')}
+                >
+                  <Sparkles />
+                  <span>Ask NorthStar</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               {/* Theme toggle */}
               <SidebarMenuItem>
                 <SidebarMenuButton
