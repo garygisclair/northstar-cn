@@ -194,8 +194,8 @@ export function AppShell() {
         <SidebarInset>
           <div className="flex flex-1 h-full overflow-hidden">
             <div className="flex flex-1 flex-col min-w-0">
-              {/* Content header — trigger + breadcrumbs */}
-              <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-4">
+              {/* Content header — matches sidebar-07: h-16, px-4 */}
+              <header className="flex h-16 shrink-0 items-center gap-2 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumb>
                   <BreadcrumbList>
