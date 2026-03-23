@@ -37,22 +37,7 @@ export const PAGES: Page[] = [
     category: 'Buyers',
     tags: ['curated'],
     tabs: [
-      {
-        id: 'summary',
-        label: 'Summary',
-        filters: [
-          { id: 'timeframe', label: 'Timeframe', options: ['T12M', 'T6M', 'T3M'], defaultValue: 'T12M' },
-          { id: 'format', label: 'Format', options: ['YoY', 'Actual'], defaultValue: 'YoY' },
-        ],
-        cards: [
-          { id: 'bi-kpi-1', type: 'kpi', title: 'Total Marketplace', config: { format: 'currency', prefix: '$' }, layout: { col: 1, row: 1, colSpan: 1, rowSpan: 1 } },
-          { id: 'bi-kpi-2', type: 'kpi', title: 'On-Platform Share', config: { format: 'percent' }, layout: { col: 2, row: 1, colSpan: 1, rowSpan: 1 } },
-          { id: 'bi-kpi-3', type: 'kpi', title: 'Fastest Grower', config: { format: 'text', value: 'Germany' }, layout: { col: 3, row: 1, colSpan: 1, rowSpan: 1 } },
-          { id: 'bi-kpi-4', type: 'kpi', title: 'Active Regions', config: { format: 'number' }, layout: { col: 4, row: 1, colSpan: 1, rowSpan: 1 } },
-          { id: 'bi-table', type: 'data-table', title: 'Buyers by Region', config: {}, layout: { col: 1, row: 2, colSpan: 3, rowSpan: 2 } },
-          { id: 'bi-chart', type: 'bar-chart', title: 'Distribution', config: { orientation: 'horizontal', sorted: true }, layout: { col: 4, row: 2, colSpan: 1, rowSpan: 2 } },
-        ],
-      },
+      { id: 'summary', label: 'Summary', cards: [] },
       { id: 'key-metrics', label: 'Key Metrics', cards: [] },
       { id: 'segmentation', label: 'Segmentation', cards: [] },
       { id: 'active-buyers', label: 'Active Buyers', cards: [] },
