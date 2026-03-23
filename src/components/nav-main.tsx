@@ -17,7 +17,8 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronRightIcon, PlusIcon } from "lucide-react"
+import { ChevronRightIcon, PlusIcon, GroupIcon } from "lucide-react"
+import type { SidebarPage } from "@/components/app-sidebar"
 
 interface NavLinkItem {
   title: string
@@ -27,7 +28,7 @@ interface NavLinkItem {
 
 interface PageCategory {
   label: string
-  pages: { title: string; url: string }[]
+  pages: SidebarPage[]
 }
 
 interface PagesSection {
@@ -35,6 +36,45 @@ interface PagesSection {
   icon?: React.ReactNode
   categories: PageCategory[]
   onNewPage?: () => void
+  onGroupPages?: () => void
+}
+
+function PageItem({ page }: { page: SidebarPage }) {
+  const isGrouped = page.tabs.length > 1
+
+  if (!isGrouped) {
+    return (
+      <SidebarMenuSubItem>
+        <SidebarMenuSubButton render={<a href={page.url} />}>
+          <span>{page.title}</span>
+        </SidebarMenuSubButton>
+      </SidebarMenuSubItem>
+    )
+  }
+
+  return (
+    <Collapsible className="group/page">
+      <SidebarMenuSubItem>
+        <CollapsibleTrigger
+          render={<SidebarMenuSubButton render={<button />} className="w-full" />}
+        >
+          <span>{page.title}</span>
+          <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 transition-transform duration-200 group-data-open/page:rotate-90" />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub className="mr-0 pr-0">
+            {page.tabs.map((tab) => (
+              <SidebarMenuSubItem key={tab.id}>
+                <SidebarMenuSubButton render={<a href={tab.url} />}>
+                  <span>{tab.label}</span>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuSubItem>
+    </Collapsible>
+  )
 }
 
 export function NavMain({
@@ -94,11 +134,7 @@ export function NavMain({
                       <SidebarMenuSub className="mr-0 pr-0">
                         {cat.pages.length > 0 ? (
                           cat.pages.map((page) => (
-                            <SidebarMenuSubItem key={page.url}>
-                              <SidebarMenuSubButton render={<a href={page.url} />}>
-                                <span>{page.title}</span>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
+                            <PageItem key={page.id} page={page} />
                           ))
                         ) : (
                           <SidebarMenuSubItem>
@@ -119,6 +155,16 @@ export function NavMain({
                   <SidebarMenuSubButton onClick={pages.onNewPage}>
                     <PlusIcon className="h-3 w-3" />
                     <span>New Page</span>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              )}
+
+              {/* Group Pages button */}
+              {pages.onGroupPages && (
+                <SidebarMenuSubItem>
+                  <SidebarMenuSubButton onClick={pages.onGroupPages}>
+                    <GroupIcon className="h-3 w-3" />
+                    <span>Group Pages</span>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
               )}

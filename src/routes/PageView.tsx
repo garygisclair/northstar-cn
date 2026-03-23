@@ -1,8 +1,8 @@
 import { useParams } from 'react-router-dom';
-import { Bookmark, MoreVertical, X, SlidersHorizontal } from 'lucide-react';
+import { Bookmark, MoreVertical, X, SlidersHorizontal, Ungroup } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { getPage } from '@/data/pages';
+import { usePages } from '@/stores/pages';
 import { PageCanvas } from '@/components/canvas/PageCanvas';
 import VerbatimFeedTab from '@/components/reports/VoiceOfCustomer/VerbatimFeedTab';
 import { useFavorites } from '@/stores/favorites';
@@ -22,6 +22,7 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
     vocFilters: { region: string; surveyGroup: string; score: string };
     rightPanel: string | null;
   }>();
+  const { getPage, ungroupPage } = usePages();
   const page = getPage(id);
   const [activeTabId, setActiveTabId] = useState<string | undefined>(paramTabId);
   const { activeTabOverride } = useSlideshowContext();
@@ -58,6 +59,19 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
           )}
         </div>
         <div className="flex items-center gap-2">
+          {hasMultipleTabs && (
+            <button
+              onClick={() => {
+                ungroupPage(id);
+                window.history.back();
+              }}
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
+              title="Ungroup into separate pages"
+            >
+              <Ungroup className="h-3.5 w-3.5" />
+              <span>Ungroup</span>
+            </button>
+          )}
           <button
             onClick={() => toggle(id)}
             className={cn(

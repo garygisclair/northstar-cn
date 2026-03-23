@@ -19,8 +19,9 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { StatusBar } from './StatusBar';
 import { RightPanel, type RightPanelContent, type KpiFilters, DEFAULT_FILTERS, type VocFilters, DEFAULT_VOC_FILTERS } from './RightPanel';
 import { FavoritesProvider, useFavorites } from '@/stores/favorites';
-import { getPage, PAGES } from '@/data/pages';
+import { getPage } from '@/data/pages';
 import { SlideshowProvider, useSlideshowContext } from '@/components/slideshow/SlideshowContext';
+import { PagesProvider, usePages } from '@/stores/pages';
 import { SlideshowFab } from '@/components/slideshow/SlideshowFab';
 import { SlideshowProgressBar } from '@/components/slideshow/SlideshowProgressBar';
 import { FileTextIcon, SearchIcon, BookmarkIcon, BellIcon, MegaphoneIcon, BookOpenIcon, ArrowLeftIcon, ArrowRightIcon, MaximizeIcon, MinimizeIcon, BotIcon } from 'lucide-react';
@@ -72,14 +73,22 @@ function useBreadcrumbs() {
   return [{ label: 'Home', href: '#/' }];
 }
 
-/** Syncs saved/favorite page IDs into the slideshow context */
+/** Only show FAB when saved sidebar is active or slideshow is playing */
+function SlideshowFabGuard({ savedView }: { savedView: boolean }) {
+  const { state } = useSlideshowContext();
+  if (!savedView && !state.playing) return null;
+  return <SlideshowFab />;
+}
+
+/** Syncs saved/favorite pages into the slideshow context */
 function SlideshowSync() {
   const { favorites } = useFavorites();
-  const { setPageIds } = useSlideshowContext();
+  const { pages } = usePages();
+  const { setSlidePages } = useSlideshowContext();
   useEffect(() => {
-    const ids = PAGES.filter(p => favorites.has(p.id)).map(p => p.id);
-    setPageIds(ids);
-  }, [favorites, setPageIds]);
+    const saved = pages.filter(p => favorites.has(p.id));
+    setSlidePages(saved);
+  }, [favorites, pages, setSlidePages]);
   return null;
 }
 
@@ -120,6 +129,7 @@ export function AppShell() {
   const navigate = useNavigate();
 
   return (
+    <PagesProvider>
     <FavoritesProvider>
     <SlideshowProvider>
     <TooltipProvider>
@@ -282,8 +292,9 @@ export function AppShell() {
       </SidebarProvider>
       </div>
     </TooltipProvider>
-    <SlideshowFab />
+    <SlideshowFabGuard savedView={sidebarView === 'saved'} />
     </SlideshowProvider>
     </FavoritesProvider>
+    </PagesProvider>
   );
 }

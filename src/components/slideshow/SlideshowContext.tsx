@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PAGES } from '@/data/pages';
+import type { Page } from '@/types';
 
 interface SlideshowState {
   playing: boolean;
@@ -13,7 +13,7 @@ interface SlideshowState {
 interface SlideshowContextValue {
   state: SlideshowState;
   pageIds: string[];
-  setPageIds: (ids: string[]) => void;
+  setSlidePages: (pages: Page[]) => void;
   activeTabOverride: string | null;
   tabDuration: number;
   setTabDuration: (seconds: number) => void;
@@ -35,15 +35,10 @@ const DEFAULT_TAB_DURATION = 10;
 const DEFAULT_SLIDE_DURATION = 30;
 const TICK_INTERVAL = 50;
 
-function getTabsForPage(pageId: string) {
-  const page = PAGES.find(p => p.id === pageId);
-  return page ? page.tabs : [];
-}
-
 export function SlideshowProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
-  const [pageIds, setPageIds] = useState<string[]>([]);
+  const [slidePages, setSlidePages] = useState<Page[]>([]);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [tabDuration, setTabDuration] = useState(DEFAULT_TAB_DURATION);
@@ -56,22 +51,27 @@ export function SlideshowProvider({ children }: { children: React.ReactNode }) {
   const slideDurationRef = useRef(slideDuration);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef(0);
-  const pageIdsRef = useRef(pageIds);
+  const slidePagesRef = useRef(slidePages);
   const currentPageIndexRef = useRef(currentPageIndex);
   const currentTabIndexRef = useRef(currentTabIndex);
 
   useEffect(() => { tabDurationRef.current = tabDuration; }, [tabDuration]);
   useEffect(() => { slideDurationRef.current = slideDuration; }, [slideDuration]);
-  useEffect(() => { pageIdsRef.current = pageIds; }, [pageIds]);
+  useEffect(() => { slidePagesRef.current = slidePages; }, [slidePages]);
   useEffect(() => { currentPageIndexRef.current = currentPageIndex; }, [currentPageIndex]);
   useEffect(() => { currentTabIndexRef.current = currentTabIndex; }, [currentTabIndex]);
 
+  const getTabsForPage = useCallback((pIdx: number) => {
+    const pages = slidePagesRef.current;
+    if (pIdx < 0 || pIdx >= pages.length) return [];
+    return pages[pIdx].tabs;
+  }, []);
+
   const goToPageTab = useCallback((pIdx: number, tIdx: number) => {
-    const ids = pageIdsRef.current;
-    if (ids.length === 0) return;
-    const safeP = pIdx % ids.length;
-    const pageId = ids[safeP];
-    const tabs = getTabsForPage(pageId);
+    const pages = slidePagesRef.current;
+    if (pages.length === 0) return;
+    const safeP = pIdx % pages.length;
+    const tabs = getTabsForPage(safeP);
     const safeT = tabs.length > 0 ? tIdx % tabs.length : 0;
 
     setCurrentPageIndex(safeP);
@@ -79,8 +79,8 @@ export function SlideshowProvider({ children }: { children: React.ReactNode }) {
     setActiveTabOverride(tabs[safeT]?.id ?? null);
     setProgress(0);
     startTimeRef.current = Date.now();
-    navigate(`/p/${pageId}`);
-  }, [navigate]);
+    navigate(`/p/${pages[safeP].id}`);
+  }, [navigate, getTabsForPage]);
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -89,10 +89,9 @@ export function SlideshowProvider({ children }: { children: React.ReactNode }) {
 
     timerRef.current = setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
-      const ids = pageIdsRef.current;
+      const pages = slidePagesRef.current;
       const pIdx = currentPageIndexRef.current;
-      const currentPageId = ids.length > 0 ? ids[pIdx % ids.length] : '';
-      const currentTabs = currentPageId ? getTabsForPage(currentPageId) : [];
+      const currentTabs = pIdx < pages.length ? pages[pIdx].tabs : [];
       const isSingleTab = currentTabs.length <= 1;
       const durationMs = (isSingleTab ? slideDurationRef.current : tabDurationRef.current) * 1000;
       const pct = Math.min((elapsed / durationMs) * 100, 100);
@@ -103,17 +102,14 @@ export function SlideshowProvider({ children }: { children: React.ReactNode }) {
         const nextTab = tIdx + 1;
 
         if (nextTab < currentTabs.length) {
-          // Advance to next tab in same page
           setCurrentTabIndex(nextTab);
           currentTabIndexRef.current = nextTab;
           setActiveTabOverride(currentTabs[nextTab].id);
           setProgress(0);
           startTimeRef.current = Date.now();
         } else {
-          // Advance to next page, first tab
-          const newPIdx = (pIdx + 1) % ids.length;
-          const newPageId = ids[newPIdx];
-          const newTabs = getTabsForPage(newPageId);
+          const newPIdx = (pIdx + 1) % pages.length;
+          const newTabs = pages[newPIdx].tabs;
           setCurrentPageIndex(newPIdx);
           currentPageIndexRef.current = newPIdx;
           setCurrentTabIndex(0);
@@ -121,11 +117,11 @@ export function SlideshowProvider({ children }: { children: React.ReactNode }) {
           setActiveTabOverride(newTabs[0]?.id ?? null);
           setProgress(0);
           startTimeRef.current = Date.now();
-          navigate(`/p/${newPageId}`);
+          navigate(`/p/${pages[newPIdx].id}`);
         }
       }
     }, TICK_INTERVAL);
-  }, [navigate]);
+  }, [navigate, getTabsForPage]);
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
@@ -141,12 +137,12 @@ export function SlideshowProvider({ children }: { children: React.ReactNode }) {
       setProgress(0);
       setActiveTabOverride(null);
     } else {
-      if (pageIds.length === 0) return;
+      if (slidePages.length === 0) return;
       setPlaying(true);
       goToPageTab(0, 0);
       startTimer();
     }
-  }, [playing, pageIds, goToPageTab, startTimer, stopTimer]);
+  }, [playing, slidePages, goToPageTab, startTimer, stopTimer]);
 
   const stop = useCallback(() => {
     stopTimer();
@@ -155,7 +151,6 @@ export function SlideshowProvider({ children }: { children: React.ReactNode }) {
     setActiveTabOverride(null);
   }, [stopTimer]);
 
-  // ESC key stops slideshow
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && playing) stop();
@@ -164,7 +159,6 @@ export function SlideshowProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [playing, stop]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => stopTimer();
   }, [stopTimer]);
@@ -174,11 +168,13 @@ export function SlideshowProvider({ children }: { children: React.ReactNode }) {
     progress,
     currentPageIndex,
     currentTabIndex,
-    totalSlides: pageIds.length,
+    totalSlides: slidePages.length,
   };
 
+  const pageIds = slidePages.map(p => p.id);
+
   return (
-    <SlideshowCtx.Provider value={{ state, pageIds, setPageIds, activeTabOverride, tabDuration, setTabDuration, slideDuration, setSlideDuration, toggle, stop }}>
+    <SlideshowCtx.Provider value={{ state, pageIds, setSlidePages, activeTabOverride, tabDuration, setTabDuration, slideDuration, setSlideDuration, toggle, stop }}>
       {children}
     </SlideshowCtx.Provider>
   );

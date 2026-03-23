@@ -4,6 +4,7 @@ import { useState, useCallback } from "react"
 import { NavMain } from "@/components/nav-main"
 import { NavSaved } from "@/components/nav-saved"
 import { TeamSwitcher } from "@/components/team-switcher"
+import { GroupPagesModal } from "@/components/GroupPagesModal"
 import {
   Sidebar,
   SidebarContent,
@@ -23,22 +24,25 @@ import {
   SunIcon,
   MoonIcon,
 } from "lucide-react"
-import { PAGES } from "@/data/pages"
 import { useFavorites } from "@/stores/favorites"
+import { usePages } from "@/stores/pages"
 
 // Build categorized page lists from PAGES data
-const curated = PAGES.filter(p => p.tags.includes('curated')).map(p => ({
-  title: p.title,
-  url: `#/p/${p.id}`,
-}))
-const certified = PAGES.filter(p => p.tags.includes('certified')).map(p => ({
-  title: p.title,
-  url: `#/p/${p.id}`,
-}))
-const mine = PAGES.filter(p => p.tags.includes('mine')).map(p => ({
-  title: p.title,
-  url: `#/p/${p.id}`,
-}))
+export interface SidebarPage {
+  id: string
+  title: string
+  url: string
+  tabs: { id: string; label: string; url: string }[]
+}
+
+function toSidebarPage(p: { id: string; title: string; tabs: { id: string; label: string }[] }): SidebarPage {
+  return {
+    id: p.id,
+    title: p.title,
+    url: `#/p/${p.id}`,
+    tabs: p.tabs.map(t => ({ id: t.id, label: t.label, url: `#/p/${p.id}/${t.id}` })),
+  }
+}
 
 const data = {
   user: {
@@ -65,8 +69,14 @@ export function AppSidebar({
   sidebarView,
   ...props
 }: AppSidebarProps) {
+  const { pages, groupPages } = usePages()
   const { favorites } = useFavorites()
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
+  const [showGroupModal, setShowGroupModal] = useState(false)
+
+  const curated = pages.filter(p => p.tags.includes('curated')).map(toSidebarPage)
+  const certified = pages.filter(p => p.tags.includes('certified')).map(toSidebarPage)
+  const mine = pages.filter(p => p.tags.includes('mine')).map(toSidebarPage)
 
   const toggleDark = useCallback(() => {
     setDark(prev => {
@@ -77,10 +87,7 @@ export function AppSidebar({
     })
   }, [])
 
-  const saved = PAGES.filter(p => favorites.has(p.id)).map(p => ({
-    title: p.title,
-    url: `#/p/${p.id}`,
-  }))
+  const saved = pages.filter(p => favorites.has(p.id)).map(toSidebarPage)
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -111,6 +118,7 @@ export function AppSidebar({
                 // TODO: open new page creation flow
                 console.log('New page')
               },
+              onGroupPages: () => setShowGroupModal(true),
             }}
           />
         )}
@@ -136,6 +144,15 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
+
+      {showGroupModal && (
+        <GroupPagesModal
+          onClose={() => setShowGroupModal(false)}
+          onGroup={(name, pageIds) => {
+            groupPages(name, pageIds)
+          }}
+        />
+      )}
     </Sidebar>
   )
 }
