@@ -8,6 +8,7 @@ export type RightPanelContent = 'ask' | 'card-config' | 'sla-details';
 interface RightPanelProps {
   content: RightPanelContent | null;
   onClose: () => void;
+  onDemoComplete?: () => void;
 }
 
 const TITLES: Record<RightPanelContent, string> = {
@@ -16,10 +17,10 @@ const TITLES: Record<RightPanelContent, string> = {
   'sla-details': 'Data Quality',
 };
 
-function PanelContent({ content }: { content: RightPanelContent }) {
+function PanelContent({ content, onDemoComplete }: { content: RightPanelContent; onDemoComplete?: () => void }) {
   switch (content) {
     case 'ask':
-      return <AskPanel />;
+      return <AskPanel onDemoComplete={onDemoComplete} />;
     case 'card-config':
       return (
         <div className="p-4 text-sm text-muted-foreground">
@@ -35,7 +36,7 @@ function PanelContent({ content }: { content: RightPanelContent }) {
   }
 }
 
-export function RightPanel({ content, onClose }: RightPanelProps) {
+export function RightPanel({ content, onClose, onDemoComplete }: RightPanelProps) {
   const isMobile = useIsMobile();
 
   return (
@@ -74,7 +75,7 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
 
             {/* Content */}
             <div className="flex-1 overflow-hidden">
-              <PanelContent content={content} />
+              <PanelContent content={content} onDemoComplete={onDemoComplete} />
             </div>
           </>
         )}

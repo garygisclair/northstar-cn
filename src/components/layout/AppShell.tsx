@@ -72,6 +72,7 @@ function useBreadcrumbs() {
 export function AppShell() {
   const [sidebarView, setSidebarView] = useState<SidebarView>('main');
   const [rightPanel, setRightPanel] = useState<RightPanelContent | null>(null);
+  const [demoTriggered, setDemoTriggered] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Apply dark mode from localStorage on mount
@@ -240,7 +241,7 @@ export function AppShell() {
             <div className="flex flex-1 flex-col min-w-0">
               {/* Page content */}
               <main className="flex-1 overflow-auto">
-                <Outlet context={{ toggleRightPanel }} />
+                <Outlet context={{ toggleRightPanel, demoTriggered }} />
               </main>
 
               <StatusBar />
@@ -250,6 +251,7 @@ export function AppShell() {
             <RightPanel
               content={rightPanel}
               onClose={() => setRightPanel(null)}
+              onDemoComplete={() => setDemoTriggered(true)}
             />
           </div>
         </SidebarInset>

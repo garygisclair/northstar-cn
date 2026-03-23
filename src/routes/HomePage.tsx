@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Search, TrendingUp, TrendingDown, Plus, X, Pencil, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -142,6 +143,12 @@ const ALL_KPIS: KpiData[] = [
 
 const DEFAULT_IDS = ['revenue', 'margin-rate', 'attach-rate', 'gross-margin', 'active-customers', 'sub-revenue', 'sessions', 'aov', 'return-rate'];
 
+const DEMO_CATEGORY_KPIS: KpiData[] = [
+  { id: 'cat-sneakers', name: 'Sneakers', date: 'Wk End: Mar 16, 2026', dimension: 'Weekly | Focus Category', value: '312.4m', delta: 7.8, positive: true, chartData: [42, 50, 55, 62, 70, 82], chartLabels: ['$248.1m', '$262.5m', '$274.0m', '$288.6m', '$298.3m', '$312.4m'] },
+  { id: 'cat-handbags', name: 'Handbags', date: 'Wk End: Mar 16, 2026', dimension: 'Weekly | Focus Category', value: '189.7m', delta: 5.2, positive: true, chartData: [48, 52, 56, 60, 66, 72], chartLabels: ['$152.3m', '$160.8m', '$168.4m', '$174.2m', '$182.0m', '$189.7m'] },
+  { id: 'cat-watches', name: 'Watches', date: 'Wk End: Mar 16, 2026', dimension: 'Weekly | Focus Category', value: '156.1m', delta: 4.1, positive: true, chartData: [50, 53, 55, 60, 64, 68], chartLabels: ['$128.4m', '$134.2m', '$138.7m', '$145.0m', '$150.8m', '$156.1m'] },
+];
+
 // --- Add Metric Modal ---
 
 function AddMetricModal({ activeIds, onToggle, onClose }: { activeIds: string[]; onToggle: (id: string) => void; onClose: () => void }) {
@@ -223,9 +230,24 @@ function AddMetricModal({ activeIds, onToggle, onClose }: { activeIds: string[];
 // --- Home Page ---
 
 export function HomePage() {
+  const { demoTriggered } = useOutletContext<{ demoTriggered: boolean }>();
   const [activeIds, setActiveIds] = useState<string[]>(DEFAULT_IDS);
   const [editing, setEditing] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [demoCards, setDemoCards] = useState<KpiData[]>([]);
+  const [visibleDemoIds, setVisibleDemoIds] = useState<Set<string>>(new Set());
+
+  // When demo triggers, stagger-fade the 3 category KPIs
+  useEffect(() => {
+    if (!demoTriggered || demoCards.length > 0) return;
+    // Add all 3 cards at once (invisible), then reveal one by one
+    setDemoCards(DEMO_CATEGORY_KPIS);
+    DEMO_CATEGORY_KPIS.forEach((kpi, i) => {
+      setTimeout(() => {
+        setVisibleDemoIds(prev => new Set(prev).add(kpi.id));
+      }, i * 400);
+    });
+  }, [demoTriggered]);
 
   const activeKpis = activeIds.map((id) => ALL_KPIS.find((k) => k.id === id)!).filter(Boolean);
 
@@ -245,7 +267,7 @@ export function HomePage() {
       <div className="flex items-center gap-3 border-b border-border px-6 py-3">
         <div>
           <h1 className="text-lg font-semibold">My KPIs</h1>
-          <p className="text-sm text-muted-foreground">Key performance indicators at a glance</p>
+          <p className="text-sm text-muted-foreground">Key performance indicators making the most impact to the business</p>
         </div>
 
         <div className="flex-1" />
@@ -273,6 +295,21 @@ export function HomePage() {
         <div className="kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
           {activeKpis.map((kpi) => (
             <KpiCard key={kpi.id} kpi={kpi} editing={editing} onRemove={() => handleRemove(kpi.id)} />
+          ))}
+
+          {/* Demo category cards (fade in on Ask NorthStar demo) */}
+          {demoCards.map((kpi) => (
+            <div
+              key={kpi.id}
+              className={cn(
+                'transition-all duration-500',
+                visibleDemoIds.has(kpi.id)
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-4',
+              )}
+            >
+              <KpiCard kpi={kpi} editing={editing} onRemove={() => setDemoCards(prev => prev.filter(k => k.id !== kpi.id))} />
+            </div>
           ))}
 
           {/* Add card tile */}

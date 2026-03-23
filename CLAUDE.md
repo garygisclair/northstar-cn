@@ -74,6 +74,7 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 - [x] Compass favicon
 - [x] Responsive: sidebar floats at ≤1024px
 - [x] Sidebar footer: name + dark mode/settings/logout icons
+- [x] Ask NorthStar demo: scripted chat flow adds 3 focus category KPI cards (Sneakers, Handbags, Watches) with staggered fade-in animation
 
 ## What's Next
 - [ ] Copy mockMetricData.ts from original NorthStar
