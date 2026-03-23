@@ -75,6 +75,17 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 - [x] Responsive: sidebar floats at ≤1024px
 - [x] Sidebar footer: name + dark mode/settings/logout icons
 - [x] Ask NorthStar demo: scripted chat flow adds 3 focus category KPI cards (Sneakers, Handbags, Watches) with staggered fade-in animation
+- [x] KPI filters panel (240px right panel): Daily/Weekly/Monthly/Quarterly timeframe, platform, region — live value + date prefix updates
+- [x] Slideshow: FAB (bottom-right, saved sidebar only), progress bar, settings modal, help modal — cycles saved pages/tabs on timer, ESC to stop
+- [x] Voice of Customer: ported from original NorthStar — sentiment KPI strip, verbatim card grid, VoC filters panel (region, survey group, score)
+- [x] Default saved pages: Buyer Insights, KPI Overview, Voice of Customer (seeded when localStorage empty)
+- [x] Custom scrollbar styling (light + dark mode, 6px thin)
+- [x] Mutable pages store (`src/stores/pages.tsx`): React context, in-memory state, resets on refresh
+- [x] Expandable multi-tab pages in both sidebars: chevron → child tab links with direct `/p/:pageId/:tabId` navigation
+- [x] Group Pages: modal (single-tab pages only), 2-step flow (select → name), merges into grouped page
+- [x] Ungroup: button in PageView header for multi-tab pages, splits back into singles
+- [x] New Page: modal with title, category (shadcn Select), section pills (My Pages only, Curated/Certified disabled for non-admins)
+- [x] Empty page canvas shows dashed "Add Card" placeholder tile
 
 ## What's Next
 - [ ] Copy mockMetricData.ts from original NorthStar
@@ -83,7 +94,6 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 - [ ] Wire real data to Buyer Insights Summary tab cards
 - [ ] Arrow navigation (cycle through page categories)
 - [ ] Search functionality (utility bar)
-- [ ] New Page creation flow
 - [ ] Wire Ask NorthStar right panel as page/search recommender
 - [ ] Deploy to GitHub Pages
 - [ ] Clean up unused files (BrowseView.tsx, nav-user.tsx, nav-projects.tsx, favorites.tsx if unneeded)

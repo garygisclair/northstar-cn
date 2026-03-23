@@ -6,6 +6,8 @@ import type { Page } from '@/types';
 interface PagesContextValue {
   pages: Page[];
   getPage: (id: string) => Page | undefined;
+  /** Create a new empty page and return its ID */
+  createPage: (title: string, category: string, tag: 'curated' | 'certified' | 'mine') => string;
   /** Merge multiple single-tab pages into one grouped page */
   groupPages: (name: string, pageIds: string[]) => void;
   /** Split a grouped page back into individual single-tab pages */
@@ -21,6 +23,22 @@ export function PagesProvider({ children }: { children: ReactNode }) {
     (id: string) => pages.find(p => p.id === id),
     [pages],
   );
+
+  const createPage = useCallback((title: string, category: string, tag: 'curated' | 'certified' | 'mine') => {
+    const id = `page-${Date.now()}`;
+    const today = new Date().toISOString().split('T')[0];
+    const newPage: Page = {
+      id,
+      title,
+      category,
+      tags: [tag],
+      tabs: [{ id: 'default', label: 'Overview', cards: [] }],
+      dateCreated: today,
+      dateModified: today,
+    };
+    setPages(prev => [...prev, newPage]);
+    return id;
+  }, []);
 
   const groupPages = useCallback((name: string, pageIds: string[]) => {
     setPages(prev => {
@@ -81,7 +99,7 @@ export function PagesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PagesContext.Provider value={{ pages, getPage, groupPages, ungroupPage }}>
+    <PagesContext.Provider value={{ pages, getPage, createPage, groupPages, ungroupPage }}>
       {children}
     </PagesContext.Provider>
   );

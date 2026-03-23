@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CardRenderer } from './CardRenderer';
 import type { Card } from '@/types';
@@ -10,8 +11,11 @@ interface PageCanvasProps {
 export function PageCanvas({ cards, columns = 3 }: PageCanvasProps) {
   if (cards.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
-        No cards on this page yet.
+      <div className="p-6">
+        <div className="rounded border-2 border-dashed border-border p-8 flex flex-col items-center justify-center gap-2 min-h-[160px] text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors cursor-pointer">
+          <Plus className="h-6 w-6" />
+          <span className="text-sm font-medium">Add Card</span>
+        </div>
       </div>
     );
   }

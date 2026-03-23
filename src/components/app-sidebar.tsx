@@ -5,6 +5,8 @@ import { NavMain } from "@/components/nav-main"
 import { NavSaved } from "@/components/nav-saved"
 import { TeamSwitcher } from "@/components/team-switcher"
 import { GroupPagesModal } from "@/components/GroupPagesModal"
+import { NewPageModal } from "@/components/NewPageModal"
+import { useNavigate } from "react-router-dom"
 import {
   Sidebar,
   SidebarContent,
@@ -73,6 +75,8 @@ export function AppSidebar({
   const { favorites } = useFavorites()
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
   const [showGroupModal, setShowGroupModal] = useState(false)
+  const [showNewPageModal, setShowNewPageModal] = useState(false)
+  const navigate = useNavigate()
 
   const curated = pages.filter(p => p.tags.includes('curated')).map(toSidebarPage)
   const certified = pages.filter(p => p.tags.includes('certified')).map(toSidebarPage)
@@ -114,10 +118,7 @@ export function AppSidebar({
                 { label: "Certified", pages: certified },
                 { label: "My Pages", pages: mine },
               ],
-              onNewPage: () => {
-                // TODO: open new page creation flow
-                console.log('New page')
-              },
+              onNewPage: () => setShowNewPageModal(true),
               onGroupPages: () => setShowGroupModal(true),
             }}
           />
@@ -151,6 +152,13 @@ export function AppSidebar({
           onGroup={(name, pageIds) => {
             groupPages(name, pageIds)
           }}
+        />
+      )}
+
+      {showNewPageModal && (
+        <NewPageModal
+          onClose={() => setShowNewPageModal(false)}
+          onCreated={(id) => navigate(`/p/${id}`)}
         />
       )}
     </Sidebar>

@@ -28,6 +28,11 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
   const { activeTabOverride } = useSlideshowContext();
   const { toggle, isFavorite } = useFavorites();
 
+  // Sync tab from URL param when navigating via sidebar links
+  useEffect(() => {
+    if (paramTabId) setActiveTabId(paramTabId);
+  }, [paramTabId]);
+
   // Slideshow tab override
   useEffect(() => {
     if (activeTabOverride) setActiveTabId(activeTabOverride);
