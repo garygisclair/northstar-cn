@@ -53,6 +53,3 @@ export interface Page {
 
 /** Navigation state */
 export type NavItem = 'home' | 'browse' | 'alerts' | 'search';
-
-/** Right panel content type */
-export type RightPanelContent = 'ask' | 'card-config' | 'sla-details' | null;
