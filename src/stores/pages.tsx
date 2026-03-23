@@ -3,14 +3,26 @@ import type { ReactNode } from 'react';
 import { PAGES as SEED_PAGES } from '@/data/pages';
 import type { Page } from '@/types';
 
+export interface Section {
+  id: string;
+  label: string;
+}
+
+const DEFAULT_SECTIONS: Section[] = [
+  { id: 'curated', label: 'Curated' },
+  { id: 'certified', label: 'Certified' },
+  { id: 'mine', label: 'My Pages' },
+];
+
 interface PagesContextValue {
   pages: Page[];
+  sections: Section[];
   getPage: (id: string) => Page | undefined;
-  /** Create a new empty page and return its ID */
-  createPage: (title: string, category: string, tag: 'curated' | 'certified' | 'mine') => string;
-  /** Merge multiple single-tab pages into one grouped page */
+  createPage: (title: string, category: string, sectionId: string) => string;
+  createSection: (label: string) => string;
+  /** Remove a custom section, moving its pages to 'mine' */
+  removeSection: (sectionId: string) => void;
   groupPages: (name: string, pageIds: string[]) => void;
-  /** Split a grouped page back into individual single-tab pages */
   ungroupPage: (pageId: string) => void;
 }
 
@@ -18,20 +30,21 @@ const PagesContext = createContext<PagesContextValue | null>(null);
 
 export function PagesProvider({ children }: { children: ReactNode }) {
   const [pages, setPages] = useState<Page[]>(() => [...SEED_PAGES]);
+  const [sections, setSections] = useState<Section[]>(() => [...DEFAULT_SECTIONS]);
 
   const getPage = useCallback(
     (id: string) => pages.find(p => p.id === id),
     [pages],
   );
 
-  const createPage = useCallback((title: string, category: string, tag: 'curated' | 'certified' | 'mine') => {
+  const createPage = useCallback((title: string, category: string, sectionId: string) => {
     const id = `page-${Date.now()}`;
     const today = new Date().toISOString().split('T')[0];
     const newPage: Page = {
       id,
       title,
       category,
-      tags: [tag],
+      tags: [sectionId],
       tabs: [{ id: 'default', label: 'Overview', cards: [] }],
       dateCreated: today,
       dateModified: today,
@@ -40,19 +53,36 @@ export function PagesProvider({ children }: { children: ReactNode }) {
     return id;
   }, []);
 
+  const createSection = useCallback((label: string) => {
+    const id = `section-${Date.now()}`;
+    setSections(prev => [...prev, { id, label }]);
+    return id;
+  }, []);
+
+  const PROTECTED_SECTIONS = ['curated', 'certified', 'mine'];
+
+  const removeSection = useCallback((sectionId: string) => {
+    if (PROTECTED_SECTIONS.includes(sectionId)) return;
+    setSections(prev => prev.filter(s => s.id !== sectionId));
+    // Move pages from removed section to 'mine'
+    setPages(prev => prev.map(p =>
+      p.tags.includes(sectionId)
+        ? { ...p, tags: p.tags.map(t => t === sectionId ? 'mine' : t) }
+        : p
+    ));
+  }, []);
+
   const groupPages = useCallback((name: string, pageIds: string[]) => {
     setPages(prev => {
       const toGroup = prev.filter(p => pageIds.includes(p.id));
       if (toGroup.length < 2) return prev;
 
-      // Build tabs from each source page (use page title as tab label for single-tab pages)
       const tabs = toGroup.flatMap(p =>
         p.tabs.length === 1
           ? [{ ...p.tabs[0], id: p.id, label: p.title }]
           : p.tabs,
       );
 
-      // Inherit tags and category from first selected page
       const first = toGroup[0];
       const grouped: Page = {
         id: `group-${Date.now()}`,
@@ -66,7 +96,6 @@ export function PagesProvider({ children }: { children: ReactNode }) {
         dateModified: new Date().toISOString().split('T')[0],
       };
 
-      // Remove source pages, insert grouped page at the position of the first source
       const firstIdx = prev.findIndex(p => p.id === toGroup[0].id);
       const remaining = prev.filter(p => !pageIds.includes(p.id));
       remaining.splice(firstIdx, 0, grouped);
@@ -79,7 +108,6 @@ export function PagesProvider({ children }: { children: ReactNode }) {
       const page = prev.find(p => p.id === pageId);
       if (!page || page.tabs.length <= 1) return prev;
 
-      // Split each tab back into an individual page
       const singles: Page[] = page.tabs.map(tab => ({
         id: tab.id,
         title: tab.label,
@@ -99,7 +127,7 @@ export function PagesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PagesContext.Provider value={{ pages, getPage, createPage, groupPages, ungroupPage }}>
+    <PagesContext.Provider value={{ pages, sections, getPage, createPage, createSection, removeSection, groupPages, ungroupPage }}>
       {children}
     </PagesContext.Provider>
   );

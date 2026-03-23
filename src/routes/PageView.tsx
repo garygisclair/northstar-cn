@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Bookmark, MoreVertical, X, SlidersHorizontal, Ungroup } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -15,6 +15,7 @@ interface PageViewProps {
 
 export function PageView({ pageId: propPageId }: PageViewProps) {
   const { pageId: paramPageId, tabId: paramTabId } = useParams();
+  const navigate = useNavigate();
   const id = propPageId ?? paramPageId ?? 'home';
 
   const { toggleRightPanel, vocFilters, rightPanel } = useOutletContext<{
@@ -68,7 +69,7 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
             <button
               onClick={() => {
                 ungroupPage(id);
-                window.history.back();
+                navigate('/');
               }}
               className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
               title="Ungroup into separate pages"
@@ -92,7 +93,7 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
           </button>
           {id !== 'home' && (
             <button
-              onClick={() => window.history.back()}
+              onClick={() => navigate('/')}
               className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-4 w-4" />

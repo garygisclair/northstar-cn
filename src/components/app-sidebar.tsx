@@ -71,16 +71,18 @@ export function AppSidebar({
   sidebarView,
   ...props
 }: AppSidebarProps) {
-  const { pages, groupPages } = usePages()
+  const { pages, sections, groupPages, createSection, removeSection } = usePages()
   const { favorites } = useFavorites()
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
   const [showGroupModal, setShowGroupModal] = useState(false)
   const [showNewPageModal, setShowNewPageModal] = useState(false)
   const navigate = useNavigate()
 
-  const curated = pages.filter(p => p.tags.includes('curated')).map(toSidebarPage)
-  const certified = pages.filter(p => p.tags.includes('certified')).map(toSidebarPage)
-  const mine = pages.filter(p => p.tags.includes('mine')).map(toSidebarPage)
+  const categories = sections.map(s => ({
+    id: s.id,
+    label: s.label,
+    pages: pages.filter(p => p.tags.includes(s.id)).map(toSidebarPage),
+  }))
 
   const toggleDark = useCallback(() => {
     setDark(prev => {
@@ -113,13 +115,11 @@ export function AppSidebar({
             pages={{
               title: "Pages",
               icon: <LayoutGridIcon />,
-              categories: [
-                { label: "Curated", pages: curated },
-                { label: "Certified", pages: certified },
-                { label: "My Pages", pages: mine },
-              ],
+              categories,
               onNewPage: () => setShowNewPageModal(true),
               onGroupPages: () => setShowGroupModal(true),
+              onNewSection: (label: string) => createSection(label),
+              onRemoveSection: (sectionId: string) => removeSection(sectionId),
             }}
           />
         )}

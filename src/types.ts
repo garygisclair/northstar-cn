@@ -44,7 +44,7 @@ export interface Page {
   title: string;
   subtitle?: string;
   category?: string;
-  tags: ('home' | 'curated' | 'certified' | 'mine')[];
+  tags: string[];
   tabs: PageTab[];
   dataAsOf?: string;
   dateCreated: string;

@@ -20,11 +20,8 @@ const CATEGORIES = [
   'Sellers',
 ];
 
-const TAGS = [
-  { value: 'mine' as const, label: 'My Pages' },
-  { value: 'curated' as const, label: 'Curated' },
-  { value: 'certified' as const, label: 'Certified' },
-];
+// Admin-only sections (users can't create pages in these)
+const ADMIN_SECTIONS = ['curated', 'certified'];
 
 interface NewPageModalProps {
   onClose: () => void;
@@ -32,10 +29,10 @@ interface NewPageModalProps {
 }
 
 export function NewPageModal({ onClose, onCreated }: NewPageModalProps) {
-  const { createPage } = usePages();
+  const { createPage, sections } = usePages();
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0]);
-  const [tag, setTag] = useState<'curated' | 'certified' | 'mine'>('mine');
+  const [tag, setTag] = useState('mine');
 
   const handleCreate = () => {
     if (!title.trim()) return;
@@ -101,24 +98,24 @@ export function NewPageModal({ onClose, onCreated }: NewPageModalProps) {
             {/* Tag */}
             <div>
               <label className="text-sm font-medium block mb-1.5">Section</label>
-              <div className="flex gap-2">
-                {TAGS.map((t) => {
-                  const disabled = t.value === 'curated' || t.value === 'certified';
+              <div className="flex flex-wrap gap-2">
+                {sections.map((s) => {
+                  const disabled = ADMIN_SECTIONS.includes(s.id);
                   return (
                     <button
-                      key={t.value}
-                      onClick={() => !disabled && setTag(t.value)}
+                      key={s.id}
+                      onClick={() => !disabled && setTag(s.id)}
                       disabled={disabled}
                       className={cn(
                         'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                         disabled
                           ? 'bg-muted text-muted-foreground/50 cursor-not-allowed'
-                          : tag === t.value
+                          : tag === s.id
                             ? 'bg-primary text-primary-foreground cursor-pointer'
                             : 'bg-accent text-muted-foreground hover:text-foreground cursor-pointer',
                       )}
                     >
-                      {t.label}
+                      {s.label}
                     </button>
                   );
                 })}

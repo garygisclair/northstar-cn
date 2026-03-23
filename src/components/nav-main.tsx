@@ -17,7 +17,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronRightIcon, PlusIcon, GroupIcon } from "lucide-react"
+import { ChevronRightIcon, PlusIcon, GroupIcon, FolderPlusIcon, XIcon } from "lucide-react"
 import type { SidebarPage } from "@/components/app-sidebar"
 
 interface NavLinkItem {
@@ -27,6 +27,7 @@ interface NavLinkItem {
 }
 
 interface PageCategory {
+  id?: string
   label: string
   pages: SidebarPage[]
 }
@@ -37,6 +38,8 @@ interface PagesSection {
   categories: PageCategory[]
   onNewPage?: () => void
   onGroupPages?: () => void
+  onNewSection?: (label: string) => void
+  onRemoveSection?: (sectionId: string) => void
 }
 
 function PageItem({ page }: { page: SidebarPage }) {
@@ -86,6 +89,8 @@ export function NavMain({
 }) {
   const { state, toggleSidebar } = useSidebar()
   const [pagesOpen, setPagesOpen] = useState(true)
+  const [showNewSection, setShowNewSection] = useState(false)
+  const [newSectionName, setNewSectionName] = useState('')
 
   return (
     <SidebarGroup>
@@ -117,19 +122,35 @@ export function NavMain({
           </CollapsibleTrigger>
           <CollapsibleContent>
             <SidebarMenuSub className="mr-0 pr-0">
-              {pages.categories.map((cat) => (
+              {pages.categories.map((cat) => {
+                const isCustom = cat.id && !['curated', 'certified', 'mine'].includes(cat.id);
+                return (
                 <Collapsible
-                  key={cat.label}
+                  key={cat.id ?? cat.label}
                   defaultOpen={cat.pages.length > 0}
                   className="group/nested"
                 >
                   <SidebarMenuSubItem>
-                    <CollapsibleTrigger
-                      render={<SidebarMenuSubButton render={<button />} className="w-full" />}
-                    >
-                      <span className="font-medium">{cat.label}</span>
-                      <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 transition-transform duration-200 group-data-open/nested:rotate-90" />
-                    </CollapsibleTrigger>
+                    <div className="flex items-center w-full">
+                      <CollapsibleTrigger
+                        render={<SidebarMenuSubButton render={<button />} className="flex-1" />}
+                      >
+                        <span className="font-medium">{cat.label}</span>
+                        <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 transition-transform duration-200 group-data-open/nested:rotate-90" />
+                      </CollapsibleTrigger>
+                      {isCustom && pages.onRemoveSection && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            pages.onRemoveSection!(cat.id!);
+                          }}
+                          className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground/50 hover:text-destructive transition-colors mr-1"
+                          title="Remove section (pages move to My Pages)"
+                        >
+                          <XIcon className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                     <CollapsibleContent>
                       <SidebarMenuSub className="mr-0 pr-0">
                         {cat.pages.length > 0 ? (
@@ -147,7 +168,8 @@ export function NavMain({
                     </CollapsibleContent>
                   </SidebarMenuSubItem>
                 </Collapsible>
-              ))}
+              );
+              })}
 
               {/* New Page button */}
               {pages.onNewPage && (
@@ -166,6 +188,43 @@ export function NavMain({
                     <GroupIcon className="h-3 w-3" />
                     <span>Group Pages</span>
                   </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              )}
+
+              {/* New Section button */}
+              {pages.onNewSection && (
+                <SidebarMenuSubItem>
+                  {showNewSection ? (
+                    <div className="flex items-center gap-1 px-2 py-1">
+                      <input
+                        type="text"
+                        value={newSectionName}
+                        onChange={(e) => setNewSectionName(e.target.value)}
+                        placeholder="Section name..."
+                        className="flex-1 min-w-0 rounded border border-input bg-background px-2 py-0.5 text-xs outline-none focus:ring-1 focus:ring-ring"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newSectionName.trim()) {
+                            pages.onNewSection!(newSectionName.trim())
+                            setNewSectionName('')
+                            setShowNewSection(false)
+                          }
+                          if (e.key === 'Escape') {
+                            setNewSectionName('')
+                            setShowNewSection(false)
+                          }
+                        }}
+                        onBlur={() => {
+                          if (!newSectionName.trim()) setShowNewSection(false)
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <SidebarMenuSubButton onClick={() => setShowNewSection(true)}>
+                      <FolderPlusIcon className="h-3 w-3" />
+                      <span>New Section</span>
+                    </SidebarMenuSubButton>
+                  )}
                 </SidebarMenuSubItem>
               )}
             </SidebarMenuSub>

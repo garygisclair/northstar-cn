@@ -95,16 +95,16 @@ export const PAGES: Page[] = [
     dateModified: '2026-03-18',
   },
 
-  // Curated stubs
-  { id: 'biz-perf', title: 'Revenue Trends', category: 'Business Performance', tags: ['curated'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-07-01', dateModified: '2026-03-15' },
-  { id: 'sentiment', title: 'Brand Sentiment', category: 'Customer Experience', tags: ['curated'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-10-01', dateModified: '2026-03-10' },
-  { id: 'promoted', title: 'Ad Performance', category: 'Advertising', tags: ['curated'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-11-01', dateModified: '2026-03-12' },
-  { id: 'hourly', title: 'Real-Time Activity', category: 'Traffic & Engagement', tags: ['curated'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-12-01', dateModified: '2026-03-08' },
-  { id: 'funnel', title: 'Engagement Funnel', category: 'Traffic & Engagement', tags: ['curated'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2026-01-01', dateModified: '2026-03-05' },
-  { id: 'cbt-sales', title: 'Cross-Border Sales', category: 'Cross-Border Trade', tags: ['curated'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2026-01-15', dateModified: '2026-03-01' },
-  { id: 'gmv-device', title: 'Platform Mix', category: 'Traffic & Engagement', tags: ['curated'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2026-02-01', dateModified: '2026-02-28' },
-  { id: 'gmv-category', title: 'Category Breakdown', category: 'Business Performance', tags: ['curated'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2026-02-15', dateModified: '2026-02-20' },
-  { id: 'sell-funnel', title: 'Seller Pipeline', category: 'Sellers', tags: ['curated'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-06-15', dateModified: '2026-02-15' },
+  // Certified stubs
+  { id: 'biz-perf', title: 'Revenue Trends', category: 'Business Performance', tags: ['certified'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-07-01', dateModified: '2026-03-15' },
+  { id: 'sentiment', title: 'Brand Sentiment', category: 'Customer Experience', tags: ['certified'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-10-01', dateModified: '2026-03-10' },
+  { id: 'promoted', title: 'Ad Performance', category: 'Advertising', tags: ['certified'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-11-01', dateModified: '2026-03-12' },
+  { id: 'hourly', title: 'Real-Time Activity', category: 'Traffic & Engagement', tags: ['certified'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-12-01', dateModified: '2026-03-08' },
+  { id: 'funnel', title: 'Engagement Funnel', category: 'Traffic & Engagement', tags: ['certified'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2026-01-01', dateModified: '2026-03-05' },
+  { id: 'cbt-sales', title: 'Cross-Border Sales', category: 'Cross-Border Trade', tags: ['certified'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2026-01-15', dateModified: '2026-03-01' },
+  { id: 'gmv-device', title: 'Platform Mix', category: 'Traffic & Engagement', tags: ['certified'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2026-02-01', dateModified: '2026-02-28' },
+  { id: 'gmv-category', title: 'Category Breakdown', category: 'Business Performance', tags: ['certified'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2026-02-15', dateModified: '2026-02-20' },
+  { id: 'sell-funnel', title: 'Seller Pipeline', category: 'Sellers', tags: ['certified'], tabs: [{ id: 'default', label: 'Overview', cards: [] }], dateCreated: '2025-06-15', dateModified: '2026-02-15' },
 ];
 
 export function getPage(id: string): Page | undefined {
