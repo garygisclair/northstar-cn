@@ -5,9 +5,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -15,7 +12,6 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
-  SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
@@ -36,12 +32,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { StatusBar } from './StatusBar';
 import { RightPanel, type RightPanelContent } from './RightPanel';
-import { HomePanel } from '@/components/sidebar/HomePanel';
-import { BrowsePanel } from '@/components/sidebar/BrowsePanel';
+import { NavMain } from '@/components/sidebar/NavMain';
 import {
-  Home,
-  LayoutGrid,
-  Bell,
   Sparkles,
   Sun,
   Moon,
@@ -51,32 +43,7 @@ import {
   LogOut,
   User,
 } from 'lucide-react';
-import type { NavItem } from '@/types';
 import { getPage } from '@/data/pages';
-
-/** Left sidebar nav items — navigation only */
-const NAV_ITEMS: { id: NavItem; icon: typeof Home; label: string }[] = [
-  { id: 'home', icon: Home, label: 'Home' },
-  { id: 'browse', icon: LayoutGrid, label: 'Browse' },
-  { id: 'alerts', icon: Bell, label: 'Alerts' },
-];
-
-function SidebarPanelContent({ activeNav }: { activeNav: NavItem }) {
-  switch (activeNav) {
-    case 'home':
-      return <HomePanel />;
-    case 'browse':
-      return <BrowsePanel />;
-    case 'alerts':
-      return (
-        <div className="px-3 py-4 text-sm text-muted-foreground">
-          No alerts at this time.
-        </div>
-      );
-    default:
-      return null;
-  }
-}
 
 /** Derive breadcrumb from current route */
 function useBreadcrumbs() {
@@ -111,7 +78,6 @@ function useBreadcrumbs() {
 }
 
 export function AppShell() {
-  const [activeNav, setActiveNav] = useState<NavItem>('home');
   const [rightPanel, setRightPanel] = useState<RightPanelContent | null>(null);
   const [dark, setDark] = useState(() =>
     typeof window !== 'undefined' && localStorage.getItem('theme') === 'dark'
@@ -152,38 +118,7 @@ export function AppShell() {
           </SidebarHeader>
 
           <SidebarContent>
-            {/* Navigation */}
-            <SidebarGroup>
-              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {NAV_ITEMS.map(({ id, icon: Icon, label }) => (
-                    <SidebarMenuItem key={id}>
-                      <SidebarMenuButton
-                        tooltip={label}
-                        isActive={activeNav === id}
-                        onClick={() => setActiveNav(id)}
-                      >
-                        <Icon />
-                        <span>{label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator />
-
-            {/* Panel content — hidden when collapsed to icons */}
-            <SidebarGroup className="flex-1 group-data-[collapsible=icon]:hidden">
-              <SidebarGroupLabel>
-                {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Content'}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarPanelContent activeNav={activeNav} />
-              </SidebarGroupContent>
-            </SidebarGroup>
+            <NavMain />
           </SidebarContent>
 
           <SidebarFooter>
@@ -288,7 +223,7 @@ export function AppShell() {
 
               {/* Page content */}
               <main className="flex-1 overflow-auto">
-                <Outlet context={{ activeNav, setActiveNav, toggleRightPanel }} />
+                <Outlet context={{ toggleRightPanel }} />
               </main>
 
               <StatusBar />
