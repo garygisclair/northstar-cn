@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -18,9 +18,9 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { StatusBar } from './StatusBar';
+import { RightPanel, type RightPanelContent } from './RightPanel';
 import { HomePanel } from '@/components/sidebar/HomePanel';
 import { BrowsePanel } from '@/components/sidebar/BrowsePanel';
-import { AskPanel } from '@/components/panels/AskPanel';
 import {
   Home,
   LayoutGrid,
@@ -32,11 +32,11 @@ import {
 } from 'lucide-react';
 import type { NavItem } from '@/types';
 
+/** Left sidebar nav items — navigation only */
 const NAV_ITEMS: { id: NavItem; icon: typeof Home; label: string }[] = [
   { id: 'home', icon: Home, label: 'Home' },
   { id: 'browse', icon: LayoutGrid, label: 'Browse' },
   { id: 'alerts', icon: Bell, label: 'Alerts' },
-  { id: 'search', icon: Sparkles, label: 'Ask NorthStar' },
 ];
 
 function SidebarPanelContent({ activeNav }: { activeNav: NavItem }) {
@@ -51,8 +51,6 @@ function SidebarPanelContent({ activeNav }: { activeNav: NavItem }) {
           No alerts at this time.
         </div>
       );
-    case 'search':
-      return <AskPanel />;
     default:
       return null;
   }
@@ -60,6 +58,7 @@ function SidebarPanelContent({ activeNav }: { activeNav: NavItem }) {
 
 export function AppShell() {
   const [activeNav, setActiveNav] = useState<NavItem>('home');
+  const [rightPanel, setRightPanel] = useState<RightPanelContent | null>(null);
   const [dark, setDark] = useState(() =>
     typeof window !== 'undefined' && localStorage.getItem('theme') === 'dark'
   );
@@ -69,10 +68,14 @@ export function AppShell() {
     localStorage.setItem('theme', dark ? 'dark' : 'light');
   }, [dark]);
 
+  const toggleRightPanel = useCallback((content: RightPanelContent) => {
+    setRightPanel(prev => (prev === content ? null : content));
+  }, []);
+
   return (
     <TooltipProvider>
       <SidebarProvider>
-        {/* Single sidebar — collapses to icon rail */}
+        {/* Left sidebar — navigation, collapses to icon rail */}
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <SidebarMenu>
@@ -122,6 +125,19 @@ export function AppShell() {
 
           <SidebarFooter>
             <SidebarMenu>
+              {/* Ask NorthStar — toggles right panel */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Ask NorthStar"
+                  isActive={rightPanel === 'ask'}
+                  onClick={() => toggleRightPanel('ask')}
+                >
+                  <Sparkles />
+                  <span>Ask NorthStar</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Theme toggle */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip={dark ? 'Light mode' : 'Dark mode'}
@@ -137,13 +153,22 @@ export function AppShell() {
           <SidebarRail />
         </Sidebar>
 
-        {/* Main content */}
+        {/* Main content + right panel */}
         <SidebarInset>
-          <div className="flex flex-1 flex-col h-full">
-            <main className="flex-1 overflow-auto">
-              <Outlet context={{ activeNav, setActiveNav }} />
-            </main>
-            <StatusBar />
+          <div className="flex flex-1 h-full overflow-hidden">
+            {/* Center: page canvas */}
+            <div className="flex flex-1 flex-col min-w-0">
+              <main className="flex-1 overflow-auto">
+                <Outlet context={{ activeNav, setActiveNav, toggleRightPanel }} />
+              </main>
+              <StatusBar />
+            </div>
+
+            {/* Right panel — independent, slides in from right */}
+            <RightPanel
+              content={rightPanel}
+              onClose={() => setRightPanel(null)}
+            />
           </div>
         </SidebarInset>
       </SidebarProvider>
