@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -93,6 +93,7 @@ export function AppShell() {
     setRightPanel(prev => (prev === content ? null : content));
   }, []);
 
+  const navigate = useNavigate();
   const breadcrumbs = useBreadcrumbs();
 
   return (
@@ -104,7 +105,7 @@ export function AppShell() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <div className="flex items-center gap-1">
-                  <SidebarMenuButton size="lg" tooltip="NorthStar" className="flex-1">
+                  <SidebarMenuButton size="lg" tooltip="NorthStar" className="flex-1" onClick={() => navigate('/')}>
                     <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                       <Compass className="size-4" />
                     </div>
