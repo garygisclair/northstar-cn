@@ -110,7 +110,7 @@ export function AppShell() {
         {/* Top bar — spans full width above sidebar + content */}
         <div className="flex h-9 shrink-0 border-b border-border bg-background z-20">
           {/* Icons — matches sidebar width */}
-          <div className="flex shrink-0 items-center gap-1 px-2 md:w-(--sidebar-width) group-data-[collapsible=icon]/sidebar-wrapper:md:w-(--sidebar-width-icon)">
+          <div className="flex shrink-0 items-center gap-1 px-2 lg:w-(--sidebar-width) group-data-[collapsible=icon]/sidebar-wrapper:lg:w-(--sidebar-width-icon)">
             <SidebarTrigger className="h-6 w-6 text-muted-foreground hover:text-foreground" />
             <Tooltip>
               <TooltipTrigger
@@ -146,19 +146,16 @@ export function AppShell() {
             {breadcrumbs.length > 1 && (
               <>
                 <button
-                  onClick={() => navigate(-1)}
-                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground/50 cursor-default"
                 >
                   <ArrowLeftIcon className="h-3.5 w-3.5" />
                 </button>
                 <button
-                  onClick={() => navigate(1)}
-                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground/50 cursor-default"
                 >
                   <ArrowRightIcon className="h-3.5 w-3.5" />
                 </button>
-                <div className="flex-1 flex justify-center">
-                  <Breadcrumb>
+                <Breadcrumb>
                     <BreadcrumbList>
                       {breadcrumbs.map((crumb, i) => {
                         const isLast = i === breadcrumbs.length - 1;
@@ -178,8 +175,7 @@ export function AppShell() {
                         );
                       })}
                     </BreadcrumbList>
-                  </Breadcrumb>
-                </div>
+                </Breadcrumb>
               </>
             )}
 
