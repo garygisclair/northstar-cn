@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   Collapsible,
   CollapsibleContent,
@@ -14,6 +15,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { ChevronRightIcon, PlusIcon } from "lucide-react"
 
@@ -42,6 +44,9 @@ export function NavMain({
   links: NavLinkItem[]
   pages: PagesSection
 }) {
+  const { state, toggleSidebar } = useSidebar()
+  const [pagesOpen, setPagesOpen] = useState(true)
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -58,16 +63,17 @@ export function NavMain({
 
         {/* Pages section — collapsible with category sub-groups */}
         <Collapsible
-          defaultOpen
+          open={pagesOpen}
+          onOpenChange={setPagesOpen}
           className="group/collapsible"
           render={<SidebarMenuItem />}
         >
           <CollapsibleTrigger
-            render={<SidebarMenuButton tooltip={pages.title} />}
+            render={<SidebarMenuButton tooltip={pages.title} onClick={state === 'collapsed' ? (e: React.MouseEvent) => { e.preventDefault(); toggleSidebar(); setPagesOpen(true); } : undefined} />}
           >
-            <ChevronRightIcon className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-open/collapsible:rotate-90" />
             {pages.icon}
             <span>{pages.title}</span>
+            <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 transition-transform duration-200 group-data-open/collapsible:rotate-90" />
           </CollapsibleTrigger>
           <CollapsibleContent>
             <SidebarMenuSub className="mr-0 pr-0">
@@ -79,10 +85,10 @@ export function NavMain({
                 >
                   <SidebarMenuSubItem>
                     <CollapsibleTrigger
-                      render={<SidebarMenuSubButton />}
+                      render={<SidebarMenuSubButton render={<button />} className="w-full" />}
                     >
-                      <ChevronRightIcon className="h-3 w-3 shrink-0 transition-transform duration-200 group-data-open/nested:rotate-90" />
                       <span className="font-medium">{cat.label}</span>
+                      <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 transition-transform duration-200 group-data-open/nested:rotate-90" />
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub className="mr-0 pr-0">

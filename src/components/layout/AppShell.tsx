@@ -20,7 +20,7 @@ import { StatusBar } from './StatusBar';
 import { RightPanel, type RightPanelContent } from './RightPanel';
 import { FavoritesProvider } from '@/stores/favorites';
 import { getPage } from '@/data/pages';
-import { FileTextIcon, SearchIcon, BookmarkIcon, BellIcon, MegaphoneIcon, BookOpenIcon, ArrowLeftIcon, ArrowRightIcon, XIcon, PlusIcon } from 'lucide-react';
+import { FileTextIcon, SearchIcon, BookmarkIcon, BellIcon, MegaphoneIcon, BookOpenIcon, ArrowLeftIcon, ArrowRightIcon, MaximizeIcon, MinimizeIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +36,9 @@ function useBreadcrumbs() {
 
   if (path === '/' || path === '') {
     return [{ label: 'Home' }];
+  }
+  if (path === '/new-tab') {
+    return [{ label: 'New tab' }];
   }
   if (path === '/alerts') {
     return [{ label: 'Home', href: '#/' }, { label: 'Alerts' }];
@@ -69,14 +72,27 @@ function useBreadcrumbs() {
 export function AppShell() {
   const [sidebarView, setSidebarView] = useState<SidebarView>('main');
   const [rightPanel, setRightPanel] = useState<RightPanelContent | null>(null);
-  const [dark, setDark] = useState(() =>
-    typeof window !== 'undefined' && localStorage.getItem('theme') === 'dark'
-  );
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Apply dark mode from localStorage on mount
+  useEffect(() => {
+    const dark = localStorage.getItem('theme') === 'dark';
+    document.documentElement.classList.toggle('dark', dark);
+  }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
-  }, [dark]);
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen();
+    }
+  }, []);
 
   const toggleRightPanel = useCallback((content: RightPanelContent) => {
     setRightPanel(prev => (prev === content ? null : content));
@@ -94,7 +110,7 @@ export function AppShell() {
         {/* Top bar — spans full width above sidebar + content */}
         <div className="flex h-9 shrink-0 border-b border-border bg-background z-20">
           {/* Icons — matches sidebar width */}
-          <div className="flex w-(--sidebar-width) shrink-0 items-center gap-1 px-2 group-data-[collapsible=icon]/sidebar-wrapper:w-(--sidebar-width-icon)">
+          <div className="flex shrink-0 items-center gap-1 px-2 md:w-(--sidebar-width) group-data-[collapsible=icon]/sidebar-wrapper:md:w-(--sidebar-width-icon)">
             <SidebarTrigger className="h-6 w-6 text-muted-foreground hover:text-foreground" />
             <Tooltip>
               <TooltipTrigger
@@ -125,72 +141,10 @@ export function AppShell() {
             </Tooltip>
           </div>
 
-          {/* Tabs area — fills remaining width */}
-          <div className="flex flex-1 items-end px-2">
-            {/* Page tab — browser-style */}
-            <div className="flex h-8 items-center gap-1.5 rounded-t-sm bg-muted/40 border-x border-t border-border px-3 text-xs font-medium text-foreground max-w-56 -mb-px">
-              <span className="truncate">{breadcrumbs[breadcrumbs.length - 1]?.label}</span>
-              <button
-                onClick={() => navigate(-1)}
-                className="ml-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                <XIcon className="h-3 w-3" />
-              </button>
-            </div>
-            <div className="ml-[3px] self-center">
-              <TooltipProvider delay={500}>
-                <Tooltip>
-                  <TooltipTrigger
-                    render={<button className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors" />}
-                  >
-                    <PlusIcon className="h-3.5 w-3.5" />
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">Add tab</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-
-            {/* Alerts dropdown — right side */}
-            <div className="ml-auto">
-              <DropdownMenu>
-                <DropdownMenuTrigger render={
-                  <button className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors" />
-                }>
-                  <BellIcon className="h-3.5 w-3.5" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={4}>
-                  <DropdownMenuItem onClick={() => navigate('/alerts')}>
-                    <BellIcon className="h-3.5 w-3.5" />
-                    Alerts
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/alerts/announcements')}>
-                    <MegaphoneIcon className="h-3.5 w-3.5" />
-                    Announcements
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/alerts/articles')}>
-                    <BookOpenIcon className="h-3.5 w-3.5" />
-                    Articles
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
-
-        {/* Main layout — sidebar + content */}
-        <div className="flex flex-1 min-h-0">
-        <AppSidebar
-          sidebarView={sidebarView}
-          rightPanel={rightPanel}
-          onToggleRightPanel={toggleRightPanel}
-          dark={dark}
-          onToggleDark={() => setDark(d => !d)}
-        />
-        <SidebarInset>
-          <div className="flex flex-1 h-full overflow-hidden">
-            <div className="flex flex-1 flex-col min-w-0">
-              {/* Page toolbar — arrows + centered breadcrumb (hidden on home) */}
-              {breadcrumbs.length > 1 && <div className="flex h-8 shrink-0 items-center px-2">
+          {/* Navigation + breadcrumb — fills remaining width */}
+          <div className="flex flex-1 items-center px-2 gap-1">
+            {breadcrumbs.length > 1 && (
+              <>
                 <button
                   onClick={() => navigate(-1)}
                   className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors"
@@ -226,8 +180,52 @@ export function AppShell() {
                     </BreadcrumbList>
                   </Breadcrumb>
                 </div>
-              </div>}
+              </>
+            )}
 
+            {/* Alerts + fullscreen — right side */}
+            <div className="ml-auto flex items-center gap-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger render={
+                  <button className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors" />
+                }>
+                  <BellIcon className="h-3.5 w-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={4} className="min-w-44">
+                  <DropdownMenuItem onClick={() => navigate('/alerts')}>
+                    <BellIcon className="h-3.5 w-3.5" />
+                    Alerts
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/alerts/announcements')}>
+                    <MegaphoneIcon className="h-3.5 w-3.5" />
+                    Announcements
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/alerts/articles')}>
+                    <BookOpenIcon className="h-3.5 w-3.5" />
+                    Articles
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Tooltip>
+                <TooltipTrigger
+                  render={<button onClick={toggleFullscreen} className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors" />}
+                >
+                  {isFullscreen ? <MinimizeIcon className="h-3.5 w-3.5" /> : <MaximizeIcon className="h-3.5 w-3.5" />}
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        </div>
+
+        {/* Main layout — sidebar + content */}
+        <div className="flex flex-1 min-h-0">
+        <AppSidebar
+          sidebarView={sidebarView}
+        />
+        <SidebarInset>
+          <div className="flex flex-1 h-full overflow-hidden">
+            <div className="flex flex-1 flex-col min-w-0">
               {/* Page content */}
               <main className="flex-1 overflow-auto">
                 <Outlet context={{ toggleRightPanel }} />

@@ -1,8 +1,8 @@
 import * as React from "react"
+import { useState, useCallback } from "react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavSaved } from "@/components/nav-saved"
-import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
@@ -18,13 +18,13 @@ import {
   CompassIcon,
   HomeIcon,
   LayoutGridIcon,
-  SparklesIcon,
+  SettingsIcon,
+  LogOutIcon,
   SunIcon,
   MoonIcon,
 } from "lucide-react"
 import { PAGES } from "@/data/pages"
 import { useFavorites } from "@/stores/favorites"
-import type { RightPanelContent } from "@/components/layout/RightPanel"
 
 // Build categorized page lists from PAGES data
 const curated = PAGES.filter(p => p.tags.includes('curated')).map(p => ({
@@ -59,21 +59,23 @@ export type SidebarView = 'main' | 'saved'
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   sidebarView: SidebarView
-  rightPanel: RightPanelContent | null
-  onToggleRightPanel: (content: RightPanelContent) => void
-  dark: boolean
-  onToggleDark: () => void
 }
 
 export function AppSidebar({
   sidebarView,
-  rightPanel,
-  onToggleRightPanel,
-  dark,
-  onToggleDark,
   ...props
 }: AppSidebarProps) {
   const { favorites } = useFavorites()
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
+
+  const toggleDark = useCallback(() => {
+    setDark(prev => {
+      const next = !prev
+      document.documentElement.classList.toggle('dark', next)
+      localStorage.setItem('theme', next ? 'dark' : 'light')
+      return next
+    })
+  }, [])
 
   const saved = PAGES.filter(p => favorites.has(p.id)).map(p => ({
     title: p.title,
@@ -113,29 +115,25 @@ export function AppSidebar({
           />
         )}
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Ask NorthStar"
-              isActive={rightPanel === 'ask'}
-              onClick={() => onToggleRightPanel('ask')}
-            >
-              <SparklesIcon />
-              <span>Ask NorthStar</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip={dark ? 'Light mode' : 'Dark mode'}
-              onClick={onToggleDark}
-            >
-              {dark ? <SunIcon /> : <MoonIcon />}
-              <span>{dark ? 'Light mode' : 'Dark mode'}</span>
-            </SidebarMenuButton>
+            <div className="flex items-center justify-between px-2 py-1.5 group-data-[collapsible=icon]:justify-center">
+              <span className="truncate text-sm text-sidebar-foreground group-data-[collapsible=icon]:hidden">{data.user.name}</span>
+              <div className="flex items-center gap-0.5">
+                <SidebarMenuButton tooltip={dark ? 'Light mode' : 'Dark mode'} className="h-7 w-7 p-0 justify-center group-data-[collapsible=icon]:hidden" onClick={toggleDark}>
+                  {dark ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+                </SidebarMenuButton>
+                <SidebarMenuButton tooltip="Settings" className="h-7 w-7 p-0 justify-center">
+                  <SettingsIcon className="h-4 w-4" />
+                </SidebarMenuButton>
+                <SidebarMenuButton tooltip="Log out" className="h-7 w-7 p-0 justify-center group-data-[collapsible=icon]:hidden">
+                  <LogOutIcon className="h-4 w-4" />
+                </SidebarMenuButton>
+              </div>
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
-        <NavUser user={data.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
