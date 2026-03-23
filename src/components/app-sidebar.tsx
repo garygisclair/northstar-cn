@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
+import { NavSaved } from "@/components/nav-saved"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
 import {
@@ -18,22 +18,32 @@ import {
   CompassIcon,
   HomeIcon,
   LayoutGridIcon,
-  BellIcon,
   SparklesIcon,
   SunIcon,
   MoonIcon,
 } from "lucide-react"
 import { PAGES } from "@/data/pages"
+import { useFavorites } from "@/stores/favorites"
 import type { RightPanelContent } from "@/components/layout/RightPanel"
 
-// Build nav data from pages
-const favorites = PAGES.filter(p => p.tags.includes('curated')).slice(0, 6)
-const allCurated = PAGES.filter(p => p.tags.includes('curated'))
+// Build categorized page lists from PAGES data
+const curated = PAGES.filter(p => p.tags.includes('curated')).map(p => ({
+  title: p.title,
+  url: `#/p/${p.id}`,
+}))
+const certified = PAGES.filter(p => p.tags.includes('certified')).map(p => ({
+  title: p.title,
+  url: `#/p/${p.id}`,
+}))
+const mine = PAGES.filter(p => p.tags.includes('mine')).map(p => ({
+  title: p.title,
+  url: `#/p/${p.id}`,
+}))
 
 const data = {
   user: {
-    name: "Gary G.",
-    email: "gary@northstar.dev",
+    name: "Jane Doe",
+    email: "jane.doe@northstar.dev",
     avatar: "",
   },
   teams: [
@@ -43,40 +53,12 @@ const data = {
       plan: "Analytics Workspace",
     },
   ],
-  navMain: [
-    {
-      title: "Home",
-      url: "#/",
-      icon: <HomeIcon />,
-      isActive: true,
-      items: favorites.map(p => ({
-        title: p.title,
-        url: `#/p/${p.id}`,
-      })),
-    },
-    {
-      title: "Browse",
-      url: "#/browse",
-      icon: <LayoutGridIcon />,
-      items: [
-        { title: "All Pages", url: "#/browse" },
-        ...allCurated.map(p => ({
-          title: p.title,
-          url: `#/p/${p.id}`,
-        })),
-      ],
-    },
-    {
-      title: "Alerts",
-      url: "#",
-      icon: <BellIcon />,
-      items: [],
-    },
-  ],
-  projects: [] as { name: string; url: string; icon: React.ReactNode }[],
 }
 
+export type SidebarView = 'main' | 'saved'
+
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  sidebarView: SidebarView
   rightPanel: RightPanelContent | null
   onToggleRightPanel: (content: RightPanelContent) => void
   dark: boolean
@@ -84,20 +66,52 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({
+  sidebarView,
   rightPanel,
   onToggleRightPanel,
   dark,
   onToggleDark,
   ...props
 }: AppSidebarProps) {
+  const { favorites } = useFavorites()
+
+  const saved = PAGES.filter(p => favorites.has(p.id)).map(p => ({
+    title: p.title,
+    url: `#/p/${p.id}`,
+  }))
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        {data.projects.length > 0 && <NavProjects projects={data.projects} />}
+        {sidebarView === 'saved' ? (
+          <NavSaved pages={saved} />
+        ) : (
+          <NavMain
+            links={[
+              {
+                title: "Home",
+                url: "#/",
+                icon: <HomeIcon />,
+              },
+            ]}
+            pages={{
+              title: "Pages",
+              icon: <LayoutGridIcon />,
+              categories: [
+                { label: "Curated", pages: curated },
+                { label: "Certified", pages: certified },
+                { label: "My Pages", pages: mine },
+              ],
+              onNewPage: () => {
+                // TODO: open new page creation flow
+                console.log('New page')
+              },
+            }}
+          />
+        )}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

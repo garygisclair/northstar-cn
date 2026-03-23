@@ -1,8 +1,9 @@
 import { useParams } from 'react-router-dom';
-import { Star, MoreVertical, X } from 'lucide-react';
+import { Bookmark, MoreVertical, X } from 'lucide-react';
 import { useState } from 'react';
 import { getPage } from '@/data/pages';
 import { PageCanvas } from '@/components/canvas/PageCanvas';
+import { useFavorites } from '@/stores/favorites';
 import { cn } from '@/lib/utils';
 
 interface PageViewProps {
@@ -15,7 +16,8 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
 
   const page = getPage(id);
   const [activeTabId, setActiveTabId] = useState<string | undefined>(paramTabId);
-  const [starred, setStarred] = useState(false);
+  const { toggle, isFavorite } = useFavorites();
+  const saved = isFavorite(id);
 
   if (!page) {
     return (
@@ -43,14 +45,14 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setStarred(s => !s)}
+            onClick={() => toggle(id)}
             className={cn(
               'p-1.5 rounded transition-colors',
-              starred ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+              saved ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
             )}
-            title={starred ? 'Remove from favorites' : 'Add to favorites'}
+            title={saved ? 'Remove from Saved' : 'Save page'}
           >
-            <Star className={cn('h-4 w-4', starred && 'fill-current')} />
+            <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} />
           </button>
           <button className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors">
             <MoreVertical className="h-4 w-4" />

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Separator } from '@/components/ui/separator';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,7 +18,16 @@ import {
 import { AppSidebar } from '@/components/app-sidebar';
 import { StatusBar } from './StatusBar';
 import { RightPanel, type RightPanelContent } from './RightPanel';
+import { FavoritesProvider } from '@/stores/favorites';
 import { getPage } from '@/data/pages';
+import { FileTextIcon, SearchIcon, BookmarkIcon, BellIcon, MegaphoneIcon, BookOpenIcon, ArrowLeftIcon, ArrowRightIcon, XIcon, PlusIcon } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import type { SidebarView } from '@/components/app-sidebar';
 
 /** Derive breadcrumb from current route */
 function useBreadcrumbs() {
@@ -28,8 +37,17 @@ function useBreadcrumbs() {
   if (path === '/' || path === '') {
     return [{ label: 'Home' }];
   }
-  if (path === '/browse') {
-    return [{ label: 'Home', href: '#/' }, { label: 'Browse' }];
+  if (path === '/alerts') {
+    return [{ label: 'Home', href: '#/' }, { label: 'Alerts' }];
+  }
+  const alertsMatch = path.match(/^\/alerts\/(.+)$/);
+  if (alertsMatch) {
+    const names: Record<string, string> = { announcements: 'Announcements', articles: 'Articles' };
+    return [
+      { label: 'Home', href: '#/' },
+      { label: 'Alerts', href: '#/alerts' },
+      { label: names[alertsMatch[1]] ?? alertsMatch[1] },
+    ];
   }
   const match = path.match(/^\/p\/([^/]+)\/?(.*)$/);
   if (match) {
@@ -49,6 +67,7 @@ function useBreadcrumbs() {
 }
 
 export function AppShell() {
+  const [sidebarView, setSidebarView] = useState<SidebarView>('main');
   const [rightPanel, setRightPanel] = useState<RightPanelContent | null>(null);
   const [dark, setDark] = useState(() =>
     typeof window !== 'undefined' && localStorage.getItem('theme') === 'dark'
@@ -65,10 +84,103 @@ export function AppShell() {
 
   const breadcrumbs = useBreadcrumbs();
 
+  const navigate = useNavigate();
+
   return (
+    <FavoritesProvider>
     <TooltipProvider>
-      <SidebarProvider>
+      <div className="flex h-svh flex-col">
+      <SidebarProvider className="flex-1 min-h-0 flex flex-col" style={{ '--sidebar-top': '2.25rem' } as React.CSSProperties}>
+        {/* Top bar — spans full width above sidebar + content */}
+        <div className="flex h-9 shrink-0 border-b border-border bg-background z-20">
+          {/* Icons — matches sidebar width */}
+          <div className="flex w-(--sidebar-width) shrink-0 items-center gap-1 px-2 group-data-[collapsible=icon]/sidebar-wrapper:w-(--sidebar-width-icon)">
+            <SidebarTrigger className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+            <Tooltip>
+              <TooltipTrigger
+                render={<button onClick={() => { navigate('/'); setSidebarView('main'); }} className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${sidebarView === 'main' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`} />}
+              >
+                <FileTextIcon className="h-3.5 w-3.5" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Home</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                render={<button className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors" />}
+              >
+                <SearchIcon className="h-3.5 w-3.5" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Search</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                render={<button
+                  onClick={() => setSidebarView(v => v === 'saved' ? 'main' : 'saved')}
+                  className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${sidebarView === 'saved' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                />}
+              >
+                <BookmarkIcon className={`h-3.5 w-3.5 ${sidebarView === 'saved' ? 'fill-current' : ''}`} />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Saved</TooltipContent>
+            </Tooltip>
+          </div>
+
+          {/* Tabs area — fills remaining width */}
+          <div className="flex flex-1 items-end px-2">
+            {/* Page tab — browser-style */}
+            <div className="flex h-8 items-center gap-1.5 rounded-t-sm bg-muted/40 border-x border-t border-border px-3 text-xs font-medium text-foreground max-w-56 -mb-px">
+              <span className="truncate">{breadcrumbs[breadcrumbs.length - 1]?.label}</span>
+              <button
+                onClick={() => navigate(-1)}
+                className="ml-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <XIcon className="h-3 w-3" />
+              </button>
+            </div>
+            <div className="ml-[3px] self-center">
+              <TooltipProvider delay={500}>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={<button className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors" />}
+                  >
+                    <PlusIcon className="h-3.5 w-3.5" />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Add tab</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {/* Alerts dropdown — right side */}
+            <div className="ml-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger render={
+                  <button className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors" />
+                }>
+                  <BellIcon className="h-3.5 w-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={4}>
+                  <DropdownMenuItem onClick={() => navigate('/alerts')}>
+                    <BellIcon className="h-3.5 w-3.5" />
+                    Alerts
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/alerts/announcements')}>
+                    <MegaphoneIcon className="h-3.5 w-3.5" />
+                    Announcements
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/alerts/articles')}>
+                    <BookOpenIcon className="h-3.5 w-3.5" />
+                    Articles
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
+
+        {/* Main layout — sidebar + content */}
+        <div className="flex flex-1 min-h-0">
         <AppSidebar
+          sidebarView={sidebarView}
           rightPanel={rightPanel}
           onToggleRightPanel={toggleRightPanel}
           dark={dark}
@@ -77,19 +189,29 @@ export function AppShell() {
         <SidebarInset>
           <div className="flex flex-1 h-full overflow-hidden">
             <div className="flex flex-1 flex-col min-w-0">
-              {/* Header — matches sidebar-07 exactly */}
-              <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                <div className="flex items-center gap-2 px-4">
-                  <SidebarTrigger className="-ml-1" />
-                  <Separator orientation="vertical" className="mr-2 h-4" />
+              {/* Page toolbar — arrows + centered breadcrumb (hidden on home) */}
+              {breadcrumbs.length > 1 && <div className="flex h-8 shrink-0 items-center px-2">
+                <button
+                  onClick={() => navigate(-1)}
+                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeftIcon className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => navigate(1)}
+                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowRightIcon className="h-3.5 w-3.5" />
+                </button>
+                <div className="flex-1 flex justify-center">
                   <Breadcrumb>
                     <BreadcrumbList>
                       {breadcrumbs.map((crumb, i) => {
                         const isLast = i === breadcrumbs.length - 1;
                         return (
                           <span key={i} className="contents">
-                            {i > 0 && <BreadcrumbSeparator className="hidden md:block" />}
-                            <BreadcrumbItem className={i > 0 ? "hidden md:block" : undefined}>
+                            {i > 0 && <BreadcrumbSeparator />}
+                            <BreadcrumbItem>
                               {isLast ? (
                                 <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                               ) : (
@@ -104,7 +226,7 @@ export function AppShell() {
                     </BreadcrumbList>
                   </Breadcrumb>
                 </div>
-              </header>
+              </div>}
 
               {/* Page content */}
               <main className="flex-1 overflow-auto">
@@ -121,7 +243,10 @@ export function AppShell() {
             />
           </div>
         </SidebarInset>
+        </div>
       </SidebarProvider>
+      </div>
     </TooltipProvider>
+    </FavoritesProvider>
   );
 }

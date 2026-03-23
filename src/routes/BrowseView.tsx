@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, Search } from 'lucide-react';
 import { PAGES } from '@/data/pages';
+import { useFavorites } from '@/stores/favorites';
 import { cn } from '@/lib/utils';
 
 export function BrowseView() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { toggle, isFavorite } = useFavorites();
 
   const browsablePages = PAGES.filter(p => p.tags.includes('curated'));
   const categories = ['All', ...new Set(browsablePages.map(p => p.category).filter(Boolean))];
@@ -19,21 +20,12 @@ export function BrowseView() {
     return true;
   });
 
-  const toggleFavorite = (id: string) => {
-    setFavorites(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   return (
     <div className="flex h-full flex-col animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div>
-          <h1 className="text-lg font-semibold">Browse Pages</h1>
+          <h1 className="text-lg font-semibold">Pages</h1>
           <p className="text-sm text-muted-foreground">
             {filtered.length} pages
           </p>
@@ -86,14 +78,14 @@ export function BrowseView() {
                   <button
                     onClick={e => {
                       e.stopPropagation();
-                      toggleFavorite(page.id);
+                      toggle(page.id);
                     }}
                     className={cn(
                       'text-muted-foreground hover:text-foreground transition-colors',
-                      favorites.has(page.id) && 'text-foreground'
+                      isFavorite(page.id) && 'text-foreground'
                     )}
                   >
-                    <Star className={cn('h-3.5 w-3.5', favorites.has(page.id) && 'fill-current')} />
+                    <Star className={cn('h-3.5 w-3.5', isFavorite(page.id) && 'fill-current')} />
                   </button>
                 </td>
                 <td className="px-2 py-2.5 font-medium">{page.title}</td>

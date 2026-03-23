@@ -1,7 +1,7 @@
 import { createHashRouter, RouterProvider } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { PageView } from '@/routes/PageView';
-import { BrowseView } from '@/routes/BrowseView';
+import { AlertsView } from '@/routes/AlertsView';
 
 const router = createHashRouter(
   [
@@ -12,7 +12,8 @@ const router = createHashRouter(
         { index: true, element: <PageView pageId="home" /> },
         { path: 'p/:pageId', element: <PageView /> },
         { path: 'p/:pageId/:tabId', element: <PageView /> },
-        { path: 'browse', element: <BrowseView /> },
+        { path: 'alerts', element: <AlertsView /> },
+        { path: 'alerts/:subPage', element: <AlertsView /> },
       ],
     },
   ],
