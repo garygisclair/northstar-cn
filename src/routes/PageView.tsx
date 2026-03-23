@@ -1,9 +1,12 @@
 import { useParams } from 'react-router-dom';
-import { Bookmark, MoreVertical, X } from 'lucide-react';
-import { useState } from 'react';
+import { Bookmark, MoreVertical, X, SlidersHorizontal } from 'lucide-react';
+import { useOutletContext } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { getPage } from '@/data/pages';
 import { PageCanvas } from '@/components/canvas/PageCanvas';
+import VerbatimFeedTab from '@/components/reports/VoiceOfCustomer/VerbatimFeedTab';
 import { useFavorites } from '@/stores/favorites';
+import { useSlideshowContext } from '@/components/slideshow/SlideshowContext';
 import { cn } from '@/lib/utils';
 
 interface PageViewProps {
@@ -14,9 +17,20 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
   const { pageId: paramPageId, tabId: paramTabId } = useParams();
   const id = propPageId ?? paramPageId ?? 'home';
 
+  const { toggleRightPanel, vocFilters, rightPanel } = useOutletContext<{
+    toggleRightPanel: (content: string) => void;
+    vocFilters: { region: string; surveyGroup: string; score: string };
+    rightPanel: string | null;
+  }>();
   const page = getPage(id);
   const [activeTabId, setActiveTabId] = useState<string | undefined>(paramTabId);
+  const { activeTabOverride } = useSlideshowContext();
   const { toggle, isFavorite } = useFavorites();
+
+  // Slideshow tab override
+  useEffect(() => {
+    if (activeTabOverride) setActiveTabId(activeTabOverride);
+  }, [activeTabOverride]);
   const saved = isFavorite(id);
 
   if (!page) {
@@ -110,9 +124,29 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
         </div>
       )}
 
-      {/* Card canvas */}
+      {/* Page content */}
       <div className="flex-1 overflow-auto">
-        {currentTab ? (
+        {id === 'cust-feedback' ? (
+          <div className="p-6">
+            <div className="flex items-center mb-5">
+              <span className="text-xs text-muted-foreground">Customer verbatim feedback and satisfaction scores across all survey channels. Use filters to drill into specific regions, survey groups, or sentiment levels.</span>
+              <div className="flex-1" />
+              <button
+                onClick={() => toggleRightPanel('voc-filters')}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer shrink-0',
+                  rightPanel === 'voc-filters'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                )}
+              >
+                <SlidersHorizontal className="h-3 w-3" />
+                Filters
+              </button>
+            </div>
+            <VerbatimFeedTab region={vocFilters.region} surveyGroup={vocFilters.surveyGroup} score={vocFilters.score} />
+          </div>
+        ) : currentTab ? (
           <PageCanvas
             cards={currentTab.cards}
             columns={id === 'home' ? 3 : 4}

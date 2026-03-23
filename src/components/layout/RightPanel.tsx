@@ -1,23 +1,77 @@
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AskPanel } from '@/components/panels/AskPanel';
+import { FiltersPanel } from '@/components/panels/FiltersPanel';
+import { VocFiltersPanel } from '@/components/panels/VocFiltersPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-export type RightPanelContent = 'ask' | 'card-config' | 'sla-details';
+export type RightPanelContent = 'ask' | 'card-config' | 'sla-details' | 'filters' | 'voc-filters';
+
+export interface KpiFilters {
+  timeframe: string;
+  platform: string;
+  region: string;
+}
+
+export interface VocFilters {
+  region: string;
+  surveyGroup: string;
+  score: string;
+}
+
+export const DEFAULT_VOC_FILTERS: VocFilters = {
+  region: 'All Regions',
+  surveyGroup: 'All',
+  score: 'All',
+};
+
+export const DEFAULT_FILTERS: KpiFilters = {
+  timeframe: 'Weekly',
+  platform: 'All Platforms',
+  region: 'Marketplace',
+};
 
 interface RightPanelProps {
   content: RightPanelContent | null;
   onClose: () => void;
   onDemoComplete?: () => void;
+  filters?: KpiFilters;
+  onFilterChange?: (filters: KpiFilters) => void;
+  vocFilters?: VocFilters;
+  onVocFilterChange?: (filters: VocFilters) => void;
 }
 
 const TITLES: Record<RightPanelContent, string> = {
   ask: 'Ask NorthStar',
   'card-config': 'Card Configuration',
   'sla-details': 'Data Quality',
+  filters: 'Filters',
+  'voc-filters': 'Filters',
 };
 
-function PanelContent({ content, onDemoComplete }: { content: RightPanelContent; onDemoComplete?: () => void }) {
+const PANEL_WIDTH: Record<RightPanelContent, string> = {
+  ask: 'w-[360px]',
+  'card-config': 'w-[360px]',
+  'sla-details': 'w-[360px]',
+  filters: 'w-[240px]',
+  'voc-filters': 'w-[240px]',
+};
+
+function PanelContent({
+  content,
+  onDemoComplete,
+  filters,
+  onFilterChange,
+  vocFilters,
+  onVocFilterChange,
+}: {
+  content: RightPanelContent;
+  onDemoComplete?: () => void;
+  filters?: KpiFilters;
+  onFilterChange?: (filters: KpiFilters) => void;
+  vocFilters?: VocFilters;
+  onVocFilterChange?: (filters: VocFilters) => void;
+}) {
   switch (content) {
     case 'ask':
       return <AskPanel onDemoComplete={onDemoComplete} />;
@@ -33,10 +87,14 @@ function PanelContent({ content, onDemoComplete }: { content: RightPanelContent;
           SLA details will appear here.
         </div>
       );
+    case 'filters':
+      return <FiltersPanel filters={filters!} onFilterChange={onFilterChange!} />;
+    case 'voc-filters':
+      return <VocFiltersPanel filters={vocFilters!} onFilterChange={onVocFilterChange!} />;
   }
 }
 
-export function RightPanel({ content, onClose, onDemoComplete }: RightPanelProps) {
+export function RightPanel({ content, onClose, onDemoComplete, filters, onFilterChange, vocFilters, onVocFilterChange }: RightPanelProps) {
   const isMobile = useIsMobile();
 
   return (
@@ -55,7 +113,7 @@ export function RightPanel({ content, onClose, onDemoComplete }: RightPanelProps
           'border-l border-sidebar-border bg-sidebar text-sidebar-foreground',
           'flex flex-col transition-[width] duration-200 ease-in-out overflow-hidden',
           isMobile && 'fixed right-0 top-0 bottom-0 z-50 shadow-xl',
-          content ? 'w-[360px]' : 'w-0'
+          content ? PANEL_WIDTH[content] : 'w-0'
         )}
       >
         {content && (
@@ -75,7 +133,14 @@ export function RightPanel({ content, onClose, onDemoComplete }: RightPanelProps
 
             {/* Content */}
             <div className="flex-1 overflow-hidden">
-              <PanelContent content={content} onDemoComplete={onDemoComplete} />
+              <PanelContent
+                content={content}
+                onDemoComplete={onDemoComplete}
+                filters={filters}
+                onFilterChange={onFilterChange}
+                vocFilters={vocFilters}
+                onVocFilterChange={onVocFilterChange}
+              />
             </div>
           </>
         )}

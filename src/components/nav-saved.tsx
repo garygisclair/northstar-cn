@@ -14,6 +14,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { ChevronRightIcon, BookmarkIcon } from "lucide-react"
 
@@ -22,6 +23,8 @@ export function NavSaved({
 }: {
   pages: { title: string; url: string }[]
 }) {
+  const { state, toggleSidebar } = useSidebar()
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Saved</SidebarGroupLabel>
@@ -32,11 +35,11 @@ export function NavSaved({
           render={<SidebarMenuItem />}
         >
           <CollapsibleTrigger
-            render={<SidebarMenuButton tooltip="Saved" />}
+            render={<SidebarMenuButton tooltip="Saved" onClick={state === 'collapsed' ? (e: React.MouseEvent) => { e.preventDefault(); toggleSidebar(); } : undefined} />}
           >
-            <ChevronRightIcon className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-open/collapsible:rotate-90" />
             <BookmarkIcon />
             <span>Saved</span>
+            <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 transition-transform duration-200 group-data-open/collapsible:rotate-90" />
           </CollapsibleTrigger>
           <CollapsibleContent>
             <SidebarMenuSub className="mr-0 pr-0">

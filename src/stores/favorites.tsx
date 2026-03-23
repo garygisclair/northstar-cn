@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 import type { ReactNode } from 'react';
 
 const STORAGE_KEY = 'northstar-favorites';
+const DEFAULT_FAVORITES = ['buyers', 'perf-dashboard', 'cust-feedback'];
 
 interface FavoritesContextValue {
   favorites: Set<string>;
@@ -14,9 +15,12 @@ const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 function loadFavorites(): Set<string> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return new Set(JSON.parse(raw));
+    if (raw) {
+      const parsed: string[] = JSON.parse(raw);
+      if (parsed.length > 0) return new Set(parsed);
+    }
   } catch { /* ignore */ }
-  return new Set();
+  return new Set(DEFAULT_FAVORITES);
 }
 
 function saveFavorites(ids: Set<string>) {

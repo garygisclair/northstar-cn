@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Search, TrendingUp, TrendingDown, Plus, X, Pencil, Check } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Plus, X, Pencil, Check, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // --- Clock ---
@@ -230,7 +230,12 @@ function AddMetricModal({ activeIds, onToggle, onClose }: { activeIds: string[];
 // --- Home Page ---
 
 export function HomePage() {
-  const { demoTriggered } = useOutletContext<{ demoTriggered: boolean }>();
+  const { demoTriggered, toggleRightPanel, kpiFilters, rightPanel } = useOutletContext<{
+    demoTriggered: boolean;
+    toggleRightPanel: (content: string) => void;
+    kpiFilters: { timeframe: string; platform: string; region: string };
+    rightPanel: string | null;
+  }>();
   const [activeIds, setActiveIds] = useState<string[]>(DEFAULT_IDS);
   const [editing, setEditing] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -249,7 +254,55 @@ export function HomePage() {
     });
   }, [demoTriggered]);
 
-  const activeKpis = activeIds.map((id) => ALL_KPIS.find((k) => k.id === id)!).filter(Boolean);
+  // Build dimension string and date prefix from active filters
+  const filterDimension = `${kpiFilters.timeframe} | ${kpiFilters.platform}${kpiFilters.region !== 'Marketplace' ? ` | ${kpiFilters.region}` : ''}`;
+
+  const DATE_PREFIX: Record<string, string> = {
+    Daily: 'EoD:',
+    Weekly: 'Wk End:',
+    Monthly: 'Mo End:',
+    Quarterly: 'Qtr End:',
+  };
+  const DATE_VALUE: Record<string, string> = {
+    Daily: 'Mar 22, 2026',
+    Weekly: 'Mar 16, 2026',
+    Monthly: 'Feb 28, 2026',
+    Quarterly: 'Mar 31, 2026',
+  };
+  const dateStr = `${DATE_PREFIX[kpiFilters.timeframe] ?? 'Wk End:'} ${DATE_VALUE[kpiFilters.timeframe] ?? 'Mar 16, 2026'}`;
+
+  // Simple hash to generate a consistent multiplier per filter combo
+  const filterKey = `${kpiFilters.timeframe}|${kpiFilters.platform}|${kpiFilters.region}`;
+  const filterHash = [...filterKey].reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
+  const filterMult = 0.75 + (((filterHash & 0x7fffffff) % 50) / 100); // 0.75–1.24
+
+  const activeKpis = activeIds.map((id) => ALL_KPIS.find((k) => k.id === id)!).filter(Boolean)
+    .map(kpi => {
+      // Shift value if filters differ from defaults
+      const isDefault = kpiFilters.timeframe === 'Weekly' && kpiFilters.platform === 'All Platforms' && kpiFilters.region === 'Marketplace';
+      if (isDefault) return { ...kpi, dimension: filterDimension, date: dateStr };
+
+      // Parse and scale the numeric value
+      const raw = kpi.value.replace(/[,$%mbks]/gi, '').trim();
+      const num = parseFloat(raw);
+      const scaled = num * filterMult;
+      // Reconstruct with original suffix
+      const suffix = kpi.value.replace(/[\d.,\s-]/g, '');
+      const hasComma = kpi.value.includes(',');
+      const formatted = hasComma
+        ? scaled.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+        : scaled.toFixed(raw.includes('.') ? (raw.split('.')[1]?.length ?? 0) : 0);
+      const newValue = kpi.value.startsWith('$') ? `$${formatted}` : `${formatted}${suffix}`;
+
+      // Shift delta slightly
+      const deltaShift = ((filterHash & 0xff) % 30 - 15) / 10;
+      const newDelta = Math.round((kpi.delta + deltaShift) * 10) / 10;
+      const newPositive = kpi.id === 'return-rate' || kpi.id === 'cac' || kpi.id === 'churn' || kpi.id === 'bounce' || kpi.id === 'support-tickets'
+        ? newDelta <= 0
+        : newDelta >= 0;
+
+      return { ...kpi, value: newValue, delta: newDelta, positive: newPositive, dimension: filterDimension, date: dateStr };
+    });
 
   const handleRemove = (id: string) => {
     setActiveIds((prev) => prev.filter((i) => i !== id));
@@ -279,18 +332,32 @@ export function HomePage() {
         <div className="flex items-center mb-4">
           <span className="text-xs text-muted-foreground">Quick facts are displayed based on usage statistics. You can customize the list with the Customize List button, or add to it with Add Metric below.</span>
           <div className="flex-1" />
-          <button
-            onClick={() => setEditing(!editing)}
-            className={cn(
-              'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer shrink-0',
-              editing
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-            )}
-          >
-            <Pencil className="h-3 w-3" />
-            {editing ? 'Save' : 'Customize List'}
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setEditing(!editing)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer',
+                editing
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+              )}
+            >
+              <Pencil className="h-3 w-3" />
+              {editing ? 'Save' : 'Customize List'}
+            </button>
+            <button
+              onClick={() => toggleRightPanel('filters')}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer',
+                rightPanel === 'filters'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+              )}
+            >
+              <SlidersHorizontal className="h-3 w-3" />
+              Filters
+            </button>
+          </div>
         </div>
         <div className="kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
           {activeKpis.map((kpi) => (

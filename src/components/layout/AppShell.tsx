@@ -17,9 +17,12 @@ import {
 } from '@/components/ui/breadcrumb';
 import { AppSidebar } from '@/components/app-sidebar';
 import { StatusBar } from './StatusBar';
-import { RightPanel, type RightPanelContent } from './RightPanel';
-import { FavoritesProvider } from '@/stores/favorites';
-import { getPage } from '@/data/pages';
+import { RightPanel, type RightPanelContent, type KpiFilters, DEFAULT_FILTERS, type VocFilters, DEFAULT_VOC_FILTERS } from './RightPanel';
+import { FavoritesProvider, useFavorites } from '@/stores/favorites';
+import { getPage, PAGES } from '@/data/pages';
+import { SlideshowProvider, useSlideshowContext } from '@/components/slideshow/SlideshowContext';
+import { SlideshowFab } from '@/components/slideshow/SlideshowFab';
+import { SlideshowProgressBar } from '@/components/slideshow/SlideshowProgressBar';
 import { FileTextIcon, SearchIcon, BookmarkIcon, BellIcon, MegaphoneIcon, BookOpenIcon, ArrowLeftIcon, ArrowRightIcon, MaximizeIcon, MinimizeIcon, BotIcon } from 'lucide-react';
 import {
   DropdownMenu,
@@ -69,10 +72,23 @@ function useBreadcrumbs() {
   return [{ label: 'Home', href: '#/' }];
 }
 
+/** Syncs saved/favorite page IDs into the slideshow context */
+function SlideshowSync() {
+  const { favorites } = useFavorites();
+  const { setPageIds } = useSlideshowContext();
+  useEffect(() => {
+    const ids = PAGES.filter(p => favorites.has(p.id)).map(p => p.id);
+    setPageIds(ids);
+  }, [favorites, setPageIds]);
+  return null;
+}
+
 export function AppShell() {
   const [sidebarView, setSidebarView] = useState<SidebarView>('main');
   const [rightPanel, setRightPanel] = useState<RightPanelContent | null>(null);
   const [demoTriggered, setDemoTriggered] = useState(false);
+  const [kpiFilters, setKpiFilters] = useState<KpiFilters>(DEFAULT_FILTERS);
+  const [vocFilters, setVocFilters] = useState<VocFilters>(DEFAULT_VOC_FILTERS);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Apply dark mode from localStorage on mount
@@ -105,7 +121,10 @@ export function AppShell() {
 
   return (
     <FavoritesProvider>
+    <SlideshowProvider>
     <TooltipProvider>
+      <SlideshowSync />
+      <SlideshowProgressBar />
       <div className="flex h-svh flex-col">
       <SidebarProvider className="flex-1 min-h-0 flex flex-col" style={{ '--sidebar-top': '2.25rem' } as React.CSSProperties}>
         {/* Top bar — spans full width above sidebar + content */}
@@ -241,7 +260,7 @@ export function AppShell() {
             <div className="flex flex-1 flex-col min-w-0">
               {/* Page content */}
               <main className="flex-1 overflow-auto">
-                <Outlet context={{ toggleRightPanel, demoTriggered }} />
+                <Outlet context={{ toggleRightPanel, demoTriggered, kpiFilters, vocFilters, rightPanel }} />
               </main>
 
               <StatusBar />
@@ -252,6 +271,10 @@ export function AppShell() {
               content={rightPanel}
               onClose={() => setRightPanel(null)}
               onDemoComplete={() => setDemoTriggered(true)}
+              filters={kpiFilters}
+              onFilterChange={setKpiFilters}
+              vocFilters={vocFilters}
+              onVocFilterChange={setVocFilters}
             />
           </div>
         </SidebarInset>
@@ -259,6 +282,8 @@ export function AppShell() {
       </SidebarProvider>
       </div>
     </TooltipProvider>
+    <SlideshowFab />
+    </SlideshowProvider>
     </FavoritesProvider>
   );
 }
