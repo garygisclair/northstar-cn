@@ -1,66 +1,41 @@
 # Status — 2026-03-23
 
-## Session Summary
+## Current State
 
-### What Happened
-1. Strategic discussion: should NorthStar be rebuilt differently? (Architecture Rethink)
-2. Decision: Card Model architecture — everything is a Page made of Cards
-3. Created fresh repo `northstar-cn` (private) to preserve original NorthStar
-4. Scaffolded with React 19 + Vite + Tailwind v4 + shadcn/ui
-5. Built layout shell: first custom, then refactored to shadcn sidebar-07 block
-6. Added independent right panel for "Ask NorthStar" AI chat
-7. Several iterations on sidebar structure:
-   - Started with custom IconMenu + LeftSidebar + RightPanel (5-zone layout)
-   - Replaced with single shadcn Sidebar (`collapsible="icon"`)
-   - Moved to accordion nav (collapsible sections)
-   - Finally imported official sidebar-07 block components
-8. Added breadcrumb header, user menu, status bar
+- **Live site**: https://garygisclair.github.io/northstar-cn/
+- **Deploys**: GitHub Actions on push to `master`
+- **Dev server**: `npm run dev` → `localhost:5173/northstar-cn/`
 
-### Key Lesson
-**Import shadcn blocks, don't build custom.** We wasted time debugging styling drift that was instantly fixed by using the official sidebar-07 block. Always check https://ui.shadcn.com/blocks first.
+### What's Built
+- Obsidian-inspired IDE layout: utility bar, tree sidebar, breadcrumb navigation
+- KPI Home Page ported from original NorthStar (20 KPIs, customize/save mode, add metric modal, live clock)
+- Interactive MiniBarChart on each KPI card (hover tooltips, trend-colored last bar)
+- SLA Modal with 5 datasets, status table, notes (opened from status bar "Data as of" link)
+- Ask NorthStar gradient button in utility bar → right panel toggle
+- Page system with tabs, filters, card canvas, bookmark toggle
+- Saved sidebar view (toggled from utility bar)
+- Alerts dropdown with sub-routes (Alerts, Announcements, Articles)
+- Dark mode default with toggle, fullscreen toggle
+- Responsive: sidebar floats at ≤1024px, 4-column KPI grid at ≥1920px
+- 13 seed pages (3 with card definitions, 10 stubs)
 
-### Current State
-- Shell is solid: sidebar-07 + right panel + status bar + breadcrumbs
-- Home page renders 9 KPI cards (deterministic mock data)
-- Buyer Insights page has 5 tabs, Summary tab has card placeholders
-- Browse page has filterable table of 13 pages
-- Dark mode works
-- Dev server: `npm run dev` → `localhost:5173/northstar-cn/`
+### What's Next
+1. Copy mockMetricData.ts from original NorthStar — seeded PRNG data engine
+2. Build BarChartCard — Recharts horizontal bar
+3. Build DataTableCard — tabular data grid
+4. Wire real data to Buyer Insights Summary tab cards
+5. Arrow navigation (cycle through page categories)
+6. Search functionality (utility bar)
+7. New Page creation flow
+8. Wire Ask NorthStar right panel as page/search recommender
+9. Clean up unused files (BrowseView.tsx, nav-user.tsx, nav-projects.tsx)
 
-### Tomorrow's Priorities
-1. **Copy mockMetricData.ts** from original NorthStar — the seeded PRNG data engine
-2. **Build BarChartCard** — Recharts horizontal bar (carry from BuyerInsights SummaryTab)
-3. **Build DataTableCard** — tabular grid (carry from BuyerInsights SummaryTab)
-4. **Wire Buyer Insights Summary** — real data flowing to KPI + chart + table cards
-5. **Polish KpiCard** — match the original NorthStar's mini chart quality
-6. Consider: should Browse use a shadcn data-table block?
-
-### Files to Reference
+### Key Files
 - `CLAUDE.md` — project instructions for Claude
 - `ARCHITECTURE.md` — Card Model design and data structures
-- `src/types.ts` — TypeScript interfaces (Card, Page, PageTab, etc.)
-- `src/data/pages.ts` — seed page data
-- `src/components/app-sidebar.tsx` — sidebar config (nav items, user, branding)
-
-### Original NorthStar Files to Carry Over
-```
-northstar/src/data/mockMetricData.ts           → northstar-cn/src/data/
-northstar/src/components/Reports/BuyerInsights/ → extract into card components
-northstar/src/components/Reports/SlaModal.tsx   → northstar-cn/src/components/shared/
-northstar/src/pages/HomePage.tsx                → reference for KPI card rendering
-```
-
-### Git Log
-```
-a0ce9ca - Use official shadcn sidebar-07 block components
-d82ff07 - Move Ask NorthStar back to sidebar footer
-0ccd5fd - Remove separator line between sidebar trigger and breadcrumb
-47f1df9 - Logo click navigates to home
-e5bcef7 - Add tooltip to Ask NorthStar button
-243a7df - Move Ask NorthStar toggle to sidebar header
-d426ef6 - Refactor sidebar to accordion nav (sidebar-07 pattern)
-cf60b36 - Match shadcn sidebar-07 defaults exactly
-9b7c871 - Add independent right panel for Ask NorthStar
-eeb0d0c - Replace custom layout with shadcn sidebar component
-9bdda0b - Initial scaffold: Card Model architecture with 5-zone layout
-```
+- `src/types.ts` — TypeScript interfaces (Card, Page, PageTab)
+- `src/data/pages.ts` — seed page data (used by PageView)
+- `src/routes/HomePage.tsx` — KPI home page with ALL_KPIS data
+- `src/components/SlaModal.tsx` — SLA status modal
+- `src/components/layout/AppShell.tsx` — utility bar, sidebar provider, right panel
+- `src/components/layout/StatusBar.tsx` — clickable "Data as of" → SLA modal
