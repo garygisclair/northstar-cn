@@ -270,7 +270,7 @@ export function HomePage() {
             {editing ? 'Save' : 'Customize List'}
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
+        <div className="kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
           {activeKpis.map((kpi) => (
             <KpiCard key={kpi.id} kpi={kpi} editing={editing} onRemove={() => handleRemove(kpi.id)} />
           ))}
