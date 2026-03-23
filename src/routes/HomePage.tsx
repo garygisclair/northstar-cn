@@ -248,28 +248,27 @@ export function HomePage() {
           <p className="text-sm text-muted-foreground">Key performance indicators at a glance</p>
         </div>
 
-        {/* Customize toggle */}
-        <button
-          onClick={() => setEditing(!editing)}
-          className={cn(
-            'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer',
-            editing
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-          )}
-        >
-          <Pencil className="h-3 w-3" />
-          {editing ? 'Save' : 'Customize List'}
-        </button>
-
         <div className="flex-1" />
         <Clock />
       </div>
 
       {/* KPI Grid */}
       <div className="flex-1 overflow-auto px-6 py-4">
-        <div className="text-xs text-muted-foreground mb-4">
-          Quick facts are displayed based on usage statistics. Customize your view using the Customize List button above.
+        <div className="flex items-center mb-4">
+          <span className="text-xs text-muted-foreground">Quick facts are displayed based on usage statistics. You can customize the list with the Customize List button, or add to it with Add Metric below.</span>
+          <div className="flex-1" />
+          <button
+            onClick={() => setEditing(!editing)}
+            className={cn(
+              'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer shrink-0',
+              editing
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+            )}
+          >
+            <Pencil className="h-3 w-3" />
+            {editing ? 'Save' : 'Customize List'}
+          </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
           {activeKpis.map((kpi) => (

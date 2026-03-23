@@ -22,14 +22,14 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 - Types defined in `src/types.ts`
 
 ### Layout (Obsidian-inspired IDE)
-1. **Utility Bar** (top, full-width) — sidebar toggle, page icon (home), search, saved toggle | ← → arrows + breadcrumb | alerts dropdown, fullscreen toggle
+1. **Utility Bar** (top, full-width) — sidebar toggle, page icon (home), search, saved toggle | ← → arrows + breadcrumb (text-xs) | Ask NorthStar (gradient button), alerts dropdown, fullscreen toggle
 2. **Left Sidebar** — tree navigation with right-aligned chevrons
    - NorthStar branding in header (links to home)
    - Home (flat link)
    - Pages (collapsible: Curated / Certified / My Pages + New Page)
    - Footer: dark mode toggle + settings + logout (collapsed: settings only)
 3. **Saved Sidebar** — alternate sidebar view toggled from utility bar bookmark icon, shows saved/bookmarked pages
-4. **Main Content** — PageView (header, tabs, filters, card canvas) + StatusBar
+4. **Main Content** — HomePage (KPI grid with customize/add metric) or PageView (header, tabs, filters, card canvas) + StatusBar (clickable "Data as of" opens SLA modal)
 5. **Right Panel** — independent, toggled by "Ask NorthStar" (AI chat, card config, SLA details)
 
 ### Responsive
@@ -48,21 +48,25 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 - Base path: `/northstar-cn/`
 - Routes: `/`, `/p/:pageId`, `/p/:pageId/:tabId`, `/new-tab`, `/alerts`, `/alerts/:subPage`
 
-## Data Sources (carry from original NorthStar)
-- `src/data/pages.ts` — seed pages with Card arrays (replaces curatedReports + reportDefs)
+## Data Sources
+- `src/data/pages.ts` — seed pages with Card arrays (used by PageView for non-home pages)
+- `src/routes/HomePage.tsx` — contains ALL_KPIS (20 KPIs with hardcoded data, ported from original NorthStar)
 - `src/data/mockMetricData.ts` — seeded PRNG mock data generator (NOT YET COPIED)
 - Original NorthStar: `C:\Users\gary\Documents\GitHub\northstar\`
 
 ## What's Built (as of 2026-03-23)
 - [x] Scaffold: React 19 + Vite + Tailwind v4 + shadcn/ui
-- [x] Utility bar: sidebar toggle, home, search, saved, arrows, breadcrumb, alerts dropdown, fullscreen
+- [x] Utility bar: sidebar toggle, home, search, saved, arrows, breadcrumb, Ask NorthStar (gradient), alerts dropdown, fullscreen
 - [x] Tree sidebar: Pages (Curated/Certified/My Pages), right-aligned chevrons, icon-mode expand
 - [x] Saved sidebar view (toggled from utility bar)
 - [x] Alerts dropdown with sub-routes (Alerts, Announcements, Articles)
 - [x] Page + Card data model + types
 - [x] 13 seed pages (3 with card definitions, 10 stubs)
-- [x] KpiCard component with deterministic mock data
+- [x] HomePage: ported from original NorthStar — 20 KPIs, customize/save mode, add metric modal, live clock
+- [x] KpiCard with interactive MiniBarChart (hover tooltips, trend-colored last bar)
 - [x] PageView route (tabs, filters, card canvas, bookmark toggle)
+- [x] SLA modal (shadcn dialog) — dataset status table, opened from status bar "Data as of" link
+- [x] StatusBar: clickable "Data as of" with SLA status indicator dot
 - [x] New tab empty state
 - [x] Favorites store (localStorage persistence)
 - [x] Dark mode toggle + persistence
@@ -79,7 +83,7 @@ Portfolio rebuild of an enterprise analytics dashboard Gary designed over 15 yea
 - [ ] Arrow navigation (cycle through page categories)
 - [ ] Search functionality (utility bar)
 - [ ] New Page creation flow
-- [ ] Wire Ask NorthStar as page/search recommender
+- [ ] Wire Ask NorthStar right panel as page/search recommender
 - [ ] Deploy to GitHub Pages
 - [ ] Clean up unused files (BrowseView.tsx, nav-user.tsx, nav-projects.tsx, favorites.tsx if unneeded)
 
