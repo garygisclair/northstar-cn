@@ -79,7 +79,7 @@ Modern tools (Notion, Figma, Grafana, Hex) use **one content model, multiple vie
 2. **Left Sidebar** — tree navigation with dynamic sections, expandable multi-tab pages, New Page / Group Pages / New Section actions
 3. **Saved Sidebar** — alternate view toggled from utility bar bookmark icon, expandable multi-tab pages
 4. **Main Content** — HomePage (KPI grid + filters) or PageView (tabs, filters, card canvas) + StatusBar
-5. **Right Panel** — independent panel for Ask NorthStar AI chat (360px), KPI filters (240px), VoC filters (240px)
+5. **Right Panel** — independent panel for Ask NorthStar AI chat (360px), KPI filters (240px), VoC filters (240px), Buyer Insights filters (240px, tab-aware)
 6. **Status Bar** — clickable "Data as of" timestamp opens SLA modal with dataset status
 7. **Slideshow FAB** — bottom-right (saved sidebar only), cycles saved pages/tabs on timer
 
@@ -88,7 +88,7 @@ Modern tools (Notion, Figma, Grafana, Hex) use **one content model, multiple vie
 | Page | Tags | Tabs | Status |
 |---|---|---|---|
 | My KPIs | `home` | 1 | 20 KPIs, customize mode, add metric modal, filters panel |
-| Buyer Insights | `curated` | 5 | All tabs stubbed |
+| Buyer Insights | `curated` | 5 | All tabs fully built (Summary, Key Metrics, Segmentation, Active Buyers, Churned) |
 | KPI Overview | `curated` | 3 | All tabs stubbed |
 | Voice of Customer | `curated` | 1 | Full VoC report (sentiment KPIs + verbatim feed + filters) |
 | + 9 stubs | `certified` | 1 each | Title + category only |
@@ -98,11 +98,12 @@ Modern tools (Notion, Figma, Grafana, Hex) use **one content model, multiple vie
 | Component | Source | Status |
 |---|---|---|
 | KPI Home Page | `northstar/src/pages/HomePage.tsx` | Ported (20 KPIs, mini bar charts, customize mode) |
+| Buyer Insights (5 tabs) | `northstar/src/components/Reports/BuyerInsights/` | Ported (all tabs, mock data, line charts, slopegraph) |
 | Voice of Customer | `northstar/src/components/Reports/VoiceOfCustomer/` | Ported (sentiment KPIs, verbatim feed, filters) |
 | SLA Modal | `northstar/src/components/Reports/SlaModal.tsx` | Ported (shadcn Dialog) |
 | Slideshow | `northstar/src/components/Slideshow/` | Ported (FAB, progress bar, settings, help modal) |
-| mockMetricData.ts (seeded PRNG) | `northstar/src/data/mockMetricData.ts` | Not yet copied |
-| Few/Tufte visualization rules | Design decisions carry over | Applied to card design |
+| Ask NorthStar Demo | Custom | 2 demos: KPI focus categories (one-shot) + Buyer Insights Summary (repeatable, fade-in) |
+| Few/Tufte visualization rules | Design decisions carry over | Applied to LineChart (range-frame axes, split coloring, direct labels) |
 
 ## References
 
