@@ -5,6 +5,11 @@ import { useState, useEffect } from 'react';
 import { usePages } from '@/stores/pages';
 import { PageCanvas } from '@/components/canvas/PageCanvas';
 import VerbatimFeedTab from '@/components/reports/VoiceOfCustomer/VerbatimFeedTab';
+import SummaryTab from '@/components/reports/BuyerInsights/SummaryTab';
+import KeyMetricsTab from '@/components/reports/BuyerInsights/KeyMetricsTab';
+import SegmentationTab from '@/components/reports/BuyerInsights/SegmentationTab';
+import ActiveBuyersTab from '@/components/reports/BuyerInsights/ActiveBuyersTab';
+import ChurnedTab from '@/components/reports/BuyerInsights/ChurnedTab';
 import { useFavorites } from '@/stores/favorites';
 import { useSlideshowContext } from '@/components/slideshow/SlideshowContext';
 import { cn } from '@/lib/utils';
@@ -18,10 +23,13 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
   const navigate = useNavigate();
   const id = propPageId ?? paramPageId ?? 'home';
 
-  const { toggleRightPanel, vocFilters, rightPanel } = useOutletContext<{
+  const { toggleRightPanel, vocFilters, buyerFilters, rightPanel, buyerDemoCount, setActiveBuyerTab } = useOutletContext<{
     toggleRightPanel: (content: string) => void;
     vocFilters: { region: string; surveyGroup: string; score: string };
+    buyerFilters: { timeframe: string; timeMeasure: string; region: string; format: string };
     rightPanel: string | null;
+    buyerDemoCount?: number;
+    setActiveBuyerTab?: (tab: string) => void;
   }>();
   const { getPage, ungroupPage } = usePages();
   const page = getPage(id);
@@ -108,7 +116,10 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
           {page.tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTabId(tab.id)}
+              onClick={() => {
+                setActiveTabId(tab.id);
+                if (id === 'buyers') setActiveBuyerTab?.(tab.id);
+              }}
               className={cn(
                 'px-3 py-2 text-sm whitespace-nowrap border-b-2 transition-colors',
                 currentTab?.id === tab.id
@@ -119,6 +130,20 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
               {tab.label}
             </button>
           ))}
+          {id === 'buyers' && (
+            <button
+              onClick={() => toggleRightPanel('buyer-filters')}
+              className={cn(
+                'ml-auto flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer shrink-0',
+                rightPanel === 'buyer-filters'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+              )}
+            >
+              <SlidersHorizontal className="h-3 w-3" />
+              Filters
+            </button>
+          )}
         </div>
       )}
 
@@ -146,7 +171,34 @@ export function PageView({ pageId: propPageId }: PageViewProps) {
 
       {/* Page content */}
       <div className="flex-1 overflow-auto">
-        {id === 'cust-feedback' ? (
+        {id === 'buyers' && currentTab?.id === 'summary' ? (
+          <SummaryTab
+            key={`summary-demo-${buyerDemoCount ?? 0}`}
+            demoMode={(buyerDemoCount ?? 0) > 0}
+            timeframe={buyerFilters.timeframe}
+          />
+        ) : id === 'buyers' && currentTab?.id === 'key-metrics' ? (
+          <KeyMetricsTab
+            timeMeasure={buyerFilters.timeMeasure}
+            region={buyerFilters.region}
+            format={buyerFilters.format}
+          />
+        ) : id === 'buyers' && currentTab?.id === 'segmentation' ? (
+          <SegmentationTab
+            region={buyerFilters.region}
+            timeframe={buyerFilters.timeframe}
+          />
+        ) : id === 'buyers' && currentTab?.id === 'active-buyers' ? (
+          <ActiveBuyersTab
+            region={buyerFilters.region}
+            timeframe={buyerFilters.timeframe}
+          />
+        ) : id === 'buyers' && currentTab?.id === 'churned' ? (
+          <ChurnedTab
+            region={buyerFilters.region}
+            timeframe={buyerFilters.timeframe}
+          />
+        ) : id === 'cust-feedback' ? (
           <div className="p-6">
             <div className="flex items-center mb-5">
               <span className="text-xs text-muted-foreground">Customer verbatim feedback and satisfaction scores across all survey channels. Use filters to drill into specific regions, survey groups, or sentiment levels.</span>

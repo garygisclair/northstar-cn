@@ -43,6 +43,11 @@
   --chart-3: oklch(0.65 0 0);
   --chart-4: oklch(0.78 0 0);
   --chart-5: oklch(0.87 0 0);
+
+  /* Semantic data colors — WCAG AA compliant */
+  --positive: hsl(152 69% 31%);
+  --negative: hsl(0 72% 51%);
+  --data-bar: oklch(0.37 0 0);
 }
 
 .dark {
@@ -79,6 +84,11 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
+
+  /* WCAG AA dark-mode variants — lighter for contrast against dark bg */
+  --positive: hsl(152 60% 54%);
+  --negative: hsl(0 90% 68%);
+  --data-bar: oklch(0.87 0 0);
 }
 
 @theme inline {
@@ -123,10 +133,10 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Semantic data colors */
-  --color-positive: oklch(0.55 0.15 155);
-  --color-negative: oklch(0.55 0.2 25);
-  --color-data-bar: oklch(0.37 0 0);
+  /* Semantic data colors — resolved from :root / .dark */
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-data-bar: var(--data-bar);
 }
 
 @layer base {
@@ -185,6 +195,21 @@
 
 .animate-fade-in {
   animation: fade-in 200ms ease-out;
+}
+
+@keyframes card-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-card-fade-in {
+  animation: card-fade-in 500ms ease-out both;
 }
 
 /* Constrain sidebar below the top utility bar */

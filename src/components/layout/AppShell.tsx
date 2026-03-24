@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { AppSidebar } from '@/components/app-sidebar';
 import { StatusBar } from './StatusBar';
-import { RightPanel, type RightPanelContent, type KpiFilters, DEFAULT_FILTERS, type VocFilters, DEFAULT_VOC_FILTERS } from './RightPanel';
+import { RightPanel, type RightPanelContent, type KpiFilters, DEFAULT_FILTERS, type VocFilters, DEFAULT_VOC_FILTERS, type BuyerFilters, DEFAULT_BUYER_FILTERS } from './RightPanel';
 import { FavoritesProvider, useFavorites } from '@/stores/favorites';
 import { getPage } from '@/data/pages';
 import { SlideshowProvider, useSlideshowContext } from '@/components/slideshow/SlideshowContext';
@@ -96,7 +96,9 @@ export function AppShell() {
   const [sidebarView, setSidebarView] = useState<SidebarView>('main');
   const [rightPanel, setRightPanel] = useState<RightPanelContent | null>(null);
   const [demoTriggered, setDemoTriggered] = useState(false);
+  const [buyerDemoCount, setBuyerDemoCount] = useState(0);
   const [kpiFilters, setKpiFilters] = useState<KpiFilters>(DEFAULT_FILTERS);
+  const [buyerFilters, setBuyerFilters] = useState<BuyerFilters>(DEFAULT_BUYER_FILTERS);
   const [vocFilters, setVocFilters] = useState<VocFilters>(DEFAULT_VOC_FILTERS);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -127,6 +129,16 @@ export function AppShell() {
   const breadcrumbs = useBreadcrumbs();
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [activeBuyerTab, setActiveBuyerTab] = useState('summary');
+
+  // Sync buyer tab from URL on initial navigation
+  useEffect(() => {
+    const match = location.pathname.match(/^\/p\/buyers\/(.+)$/);
+    if (match) setActiveBuyerTab(match[1]);
+    else if (location.pathname.match(/^\/p\/buyers\/?$/)) setActiveBuyerTab('summary');
+  }, [location.pathname]);
 
   return (
     <PagesProvider>
@@ -270,7 +282,7 @@ export function AppShell() {
             <div className="flex flex-1 flex-col min-w-0">
               {/* Page content */}
               <main className="flex-1 overflow-auto">
-                <Outlet context={{ toggleRightPanel, demoTriggered, kpiFilters, vocFilters, rightPanel }} />
+                <Outlet context={{ toggleRightPanel, demoTriggered, buyerDemoCount, kpiFilters, vocFilters, buyerFilters, rightPanel, setActiveBuyerTab }} />
               </main>
 
               <StatusBar />
@@ -281,10 +293,18 @@ export function AppShell() {
               content={rightPanel}
               onClose={() => setRightPanel(null)}
               onDemoComplete={() => setDemoTriggered(true)}
+              onBuyerDemoComplete={() => {
+                setBuyerDemoCount(c => c + 1);
+                setActiveBuyerTab('summary');
+                navigate('/p/buyers/summary');
+              }}
               filters={kpiFilters}
               onFilterChange={setKpiFilters}
               vocFilters={vocFilters}
               onVocFilterChange={setVocFilters}
+              buyerFilters={buyerFilters}
+              onBuyerFilterChange={setBuyerFilters}
+              activeBuyerTab={activeBuyerTab}
             />
           </div>
         </SidebarInset>

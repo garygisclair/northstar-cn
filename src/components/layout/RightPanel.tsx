@@ -3,9 +3,12 @@ import { cn } from '@/lib/utils';
 import { AskPanel } from '@/components/panels/AskPanel';
 import { FiltersPanel } from '@/components/panels/FiltersPanel';
 import { VocFiltersPanel } from '@/components/panels/VocFiltersPanel';
+import { BuyerFiltersPanel, type BuyerFilters } from '@/components/panels/BuyerFiltersPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-export type RightPanelContent = 'ask' | 'card-config' | 'sla-details' | 'filters' | 'voc-filters';
+export type RightPanelContent = 'ask' | 'card-config' | 'sla-details' | 'filters' | 'voc-filters' | 'buyer-filters';
+export type { BuyerFilters };
+export { DEFAULT_BUYER_FILTERS } from '@/components/panels/BuyerFiltersPanel';
 
 export interface KpiFilters {
   timeframe: string;
@@ -35,10 +38,14 @@ interface RightPanelProps {
   content: RightPanelContent | null;
   onClose: () => void;
   onDemoComplete?: () => void;
+  onBuyerDemoComplete?: () => void;
   filters?: KpiFilters;
   onFilterChange?: (filters: KpiFilters) => void;
   vocFilters?: VocFilters;
   onVocFilterChange?: (filters: VocFilters) => void;
+  buyerFilters?: BuyerFilters;
+  onBuyerFilterChange?: (filters: BuyerFilters) => void;
+  activeBuyerTab?: string;
 }
 
 const TITLES: Record<RightPanelContent, string> = {
@@ -47,6 +54,7 @@ const TITLES: Record<RightPanelContent, string> = {
   'sla-details': 'Data Quality',
   filters: 'Filters',
   'voc-filters': 'Filters',
+  'buyer-filters': 'Filters',
 };
 
 const PANEL_WIDTH: Record<RightPanelContent, string> = {
@@ -55,26 +63,35 @@ const PANEL_WIDTH: Record<RightPanelContent, string> = {
   'sla-details': 'w-[360px]',
   filters: 'w-[240px]',
   'voc-filters': 'w-[240px]',
+  'buyer-filters': 'w-[240px]',
 };
 
 function PanelContent({
   content,
   onDemoComplete,
+  onBuyerDemoComplete,
   filters,
   onFilterChange,
   vocFilters,
   onVocFilterChange,
+  buyerFilters,
+  onBuyerFilterChange,
+  activeBuyerTab,
 }: {
   content: RightPanelContent;
   onDemoComplete?: () => void;
+  onBuyerDemoComplete?: () => void;
   filters?: KpiFilters;
   onFilterChange?: (filters: KpiFilters) => void;
   vocFilters?: VocFilters;
   onVocFilterChange?: (filters: VocFilters) => void;
+  buyerFilters?: BuyerFilters;
+  onBuyerFilterChange?: (filters: BuyerFilters) => void;
+  activeBuyerTab?: string;
 }) {
   switch (content) {
     case 'ask':
-      return <AskPanel onDemoComplete={onDemoComplete} />;
+      return <AskPanel onDemoComplete={onDemoComplete} onBuyerDemoComplete={onBuyerDemoComplete} />;
     case 'card-config':
       return (
         <div className="p-4 text-sm text-muted-foreground">
@@ -91,10 +108,12 @@ function PanelContent({
       return <FiltersPanel filters={filters!} onFilterChange={onFilterChange!} />;
     case 'voc-filters':
       return <VocFiltersPanel filters={vocFilters!} onFilterChange={onVocFilterChange!} />;
+    case 'buyer-filters':
+      return <BuyerFiltersPanel filters={buyerFilters!} onFilterChange={onBuyerFilterChange!} activeTab={activeBuyerTab} />;
   }
 }
 
-export function RightPanel({ content, onClose, onDemoComplete, filters, onFilterChange, vocFilters, onVocFilterChange }: RightPanelProps) {
+export function RightPanel({ content, onClose, onDemoComplete, onBuyerDemoComplete, filters, onFilterChange, vocFilters, onVocFilterChange, buyerFilters, onBuyerFilterChange, activeBuyerTab }: RightPanelProps) {
   const isMobile = useIsMobile();
 
   return (
@@ -136,10 +155,14 @@ export function RightPanel({ content, onClose, onDemoComplete, filters, onFilter
               <PanelContent
                 content={content}
                 onDemoComplete={onDemoComplete}
+                onBuyerDemoComplete={onBuyerDemoComplete}
                 filters={filters}
                 onFilterChange={onFilterChange}
                 vocFilters={vocFilters}
                 onVocFilterChange={onVocFilterChange}
+                buyerFilters={buyerFilters}
+                onBuyerFilterChange={onBuyerFilterChange}
+                activeBuyerTab={activeBuyerTab}
               />
             </div>
           </>
